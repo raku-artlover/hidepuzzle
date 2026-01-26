@@ -3,19 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <title>HIDE PUZZLE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{
   margin:0;
   background:#fff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
   font-family: Helvetica, Arial, sans-serif;
   touch-action: none; /* スマホでのスクロール防止 */
+  display:flex;
+  justify-content:center;
 }
 
-/* ===== 共通UI ===== */
 .screen{
   position:absolute;
   inset:0;
@@ -28,22 +26,22 @@ body{
 }
 
 h1{
-  font-size:64px;
-  letter-spacing:0.1em;
-  margin-bottom:40px;
+  font-size:48px;
+  letter-spacing:0.05em;
+  margin-bottom:20px;
+  text-align:center;
 }
 
 .btn{
-  padding:14px 60px;
+  padding:12px 40px;
   border:2px solid #000;
-  font-size:20px;
+  font-size:18px;
   background:none;
   cursor:pointer;
-  margin:10px;
+  margin:5px;
   user-select:none;
 }
 
-/* ===== フェード ===== */
 #fade{
   position:absolute;
   inset:0;
@@ -54,23 +52,31 @@ h1{
   z-index:10;
 }
 
-/* ===== ゲーム ===== */
 #game{
   display:none;
   flex-direction:column;
   align-items:center;
   position:relative;
+  width:100%;
+  max-width:500px;
 }
-#reset{ margin:10px; }
-canvas{ background:#fff; touch-action:none; }
 
-/* ===== タイマー/スコア ===== */
+canvas{
+  background:#fff;
+  touch-action:none;
+  width:90%;
+  max-width:450px;
+  height:auto;
+  margin-top:10px;
+}
+
+/* タイマー/スコア */
 #timer{
   position:absolute;
   top:10px;
   left:50%;
   transform:translateX(-50%);
-  font-size:24px;
+  font-size:20px;
   font-weight:bold;
 }
 
@@ -78,26 +84,19 @@ canvas{ background:#fff; touch-action:none; }
   position:absolute;
   top:10px;
   right:10px;
-  font-size:18px;
+  font-size:16px;
 }
 
-/* ===== HOMEボタン ===== */
-#home{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:20;
-}
+/* HOME / RESET */
+#home{ position:absolute; top:10px; right:10px; }
+#reset{ position:absolute; top:10px; left:10px; }
 
-/* ===== スペースキー残数表示 ===== */
+/* スペースキー残数表示（黒丸） */
 #spaceLife{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
   display:flex;
   gap:10px;
-  z-index:20;
-  bottom:120px;
+  margin:8px 0;
+  justify-content:center;
 }
 
 .lifeDot{
@@ -107,18 +106,16 @@ canvas{ background:#fff; touch-action:none; }
   background:#000;
 }
 
-/* ===== メニュー画面 ===== */
-#levelButtons button:disabled{ opacity:0.3; cursor:not-allowed; }
-#levelButtons{ display:flex; flex-wrap:wrap; justify-content:center; max-width:600px; }
-
-/* ===== REVEALボタン ===== */
+/* REVEALボタン */
 #revealBtnContainer{
-  position:absolute;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:20;
+  display:flex;
+  justify-content:center;
+  margin-top:10px;
+  margin-bottom:10px;
 }
+
+#levelButtons button:disabled{ opacity:0.3; cursor:not-allowed; }
+#levelButtons{ display:flex; flex-wrap:wrap; justify-content:center; max-width:300px; margin:10px 0; }
 </style>
 </head>
 <body>
@@ -140,7 +137,7 @@ canvas{ background:#fff; touch-action:none; }
 <!-- クリア画面 -->
 <div id="clear" class="screen" style="display:none">
   <h1 id="clearText"></h1>
-  <p id="scoreText" style="font-size:24px;"></p>
+  <p id="scoreText" style="font-size:20px;"></p>
   <button id="next" class="btn">NEXT STAGE</button>
   <button id="retry" class="btn">RETRY</button>
   <button id="clearHome" class="btn">HOME</button>
@@ -156,30 +153,25 @@ canvas{ background:#fff; touch-action:none; }
 <div id="fade"></div>
 
 <div id="game">
+  <button id="reset" class="btn">RESET</button>
+  <button id="home" class="btn">HOME</button>
   <div id="timer">TIME: 0.0s</div>
   <div id="bestScoreUI">BEST: 0.0s</div>
 
-  <button id="home" class="btn">HOME</button>
+  <canvas id="c" width="450" height="450"></canvas>
 
-  <div id="spaceLife"></div>
-
-  <div style="margin-top:10px;">
-    <button id="reset" class="btn">Reset</button>
-  </div>
-
-  <canvas id="c" width="900" height="900"></canvas>
-
-  <!-- REVEALボタン -->
   <div id="revealBtnContainer">
     <button id="revealBtn" class="btn">REVEAL</button>
   </div>
+  <div id="spaceLife"></div>
 </div>
 
 <script>
+// --- ここからJSは元コードほぼそのまま ---
+
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
-/* ===== レベル設定 ===== */
 let LEVELS = [4,5,6,7];
 let levels = LEVELS;
 let level = 0;
@@ -192,10 +184,7 @@ let dragging = null;
 let ox = 0, oy = 0;
 
 const BOARD_PIXEL = 300;
-const TOP_MARGIN = 40;
-const GAP = 30;
 
-/* ===== UI要素 ===== */
 const fade = document.getElementById("fade");
 const title = document.getElementById("title");
 const menuScreen = document.getElementById("menuScreen");
@@ -210,6 +199,7 @@ const bestScoreUI = document.getElementById("bestScoreUI");
 const homeBtn = document.getElementById("home");
 const spaceLifeDiv = document.getElementById("spaceLife");
 const revealBtn = document.getElementById("revealBtn");
+const resetBtn = document.getElementById("reset");
 
 let startTime, elapsedTime=0;
 let timerInterval;
@@ -218,7 +208,6 @@ let reachedLevel = JSON.parse(localStorage.getItem("reachedLevel") || '{"L1":0}'
 let spaceLife = 4;
 let spacePressed = false;
 
-/* ===== クロスフェード画面遷移 ===== */
 function transitionScreen(hideElem, showElem, callback){
   hideElem.style.zIndex = 20;
   showElem.style.display = "flex";
@@ -242,7 +231,6 @@ function transitionScreen(hideElem, showElem, callback){
   }, 550);
 }
 
-/* ===== ボタンイベント ===== */
 document.getElementById("start").onclick = () => { transitionScreen(title, gameUI, ()=>startLevel()); };
 document.getElementById("menu").onclick = () => { transitionScreen(title, menuScreen, ()=>renderLevelButtons()); };
 menuBack.onclick = () => { transitionScreen(menuScreen, title); };
@@ -252,13 +240,12 @@ document.getElementById("next").onclick = () => {
   transitionScreen(clearUI, gameUI, ()=>startLevel()); 
 };
 document.getElementById("retry").onclick = () => { transitionScreen(clearUI, gameUI, ()=>startLevel()); };
-document.getElementById("reset").onclick = startLevel;
+resetBtn.onclick = startLevel;
 homeBtn.onclick = () => { startLevel(); transitionScreen(gameUI, title); };
 document.getElementById("clearHome").onclick = ()=>{ transitionScreen(clearUI, title); };
 document.getElementById("goHome").onclick = ()=>{ transitionScreen(gameOver, title); };
 document.getElementById("goRetry").onclick = ()=>{ transitionScreen(gameOver, gameUI, ()=>startLevel()); };
 
-/* ===== スペースキー & REVEALボタン ===== */
 window.addEventListener("keydown", e => {
   if(e.code==="Space" && !cleared && !spacePressed){
     spacePressed = true;
@@ -273,14 +260,8 @@ window.addEventListener("keydown", e => {
   }
 });
 
-window.addEventListener("keyup", e => {
-  if(e.code==="Space"){
-    spacePressed = false;
-    reveal = false;
-  }
-});
+window.addEventListener("keyup", e => { if(e.code==="Space"){ spacePressed = false; reveal = false; } });
 
-// REVEALボタン（スマホ用）
 revealBtn.addEventListener("touchstart", e=>{
   e.preventDefault();
   if(!cleared && spaceLife > 0){
@@ -292,10 +273,7 @@ revealBtn.addEventListener("touchstart", e=>{
     if(spaceLife <= 0) showGameOver();
   }
 });
-
-revealBtn.addEventListener("touchend", e=>{
-  reveal = false;
-});
+revealBtn.addEventListener("touchend", e=>{ reveal = false; });
 
 function renderSpaceLife(){
   spaceLifeDiv.innerHTML="";
@@ -306,7 +284,6 @@ function renderSpaceLife(){
   }
 }
 
-/* ===== メニューレベルボタン生成 ===== */
 function renderLevelButtons() {
   levelButtonsDiv.innerHTML = "";
   LEVELS.forEach((size,i)=>{
@@ -322,7 +299,6 @@ function renderLevelButtons() {
   });
 }
 
-/* ===== ボード分割 ===== */
 function splitBoard(size){
   const cells=[];
   for(let y=0;y<size;y++)for(let x=0;x<size;x++)cells.push({x,y,used:false});
@@ -346,7 +322,6 @@ function splitBoard(size){
   return result;
 }
 
-/* ===== レベル開始 ===== */
 function startLevel(){
   cleared=false;
   reveal=false;
@@ -358,7 +333,7 @@ function startLevel(){
   pieces=[];
 
   const shapes=splitBoard(gridSize);
-  let cx=60,cy=TOP_MARGIN,rowH=0;
+  let cx=20,cy=20,rowH=0;
 
   shapes.forEach(shape=>{
     const minX=Math.min(...shape.map(b=>b.x));
@@ -368,7 +343,7 @@ function startLevel(){
     const w=(maxX-minX+1)*cell;
     const h=(maxY-minY+1)*cell;
 
-    if(cx+w>canvas.width-60){cx=60;cy+=rowH+cell*0.6;rowH=0;}
+    if(cx+w>canvas.width-20){cx=20;cy+=rowH+cell*0.5;rowH=0;}
 
     pieces.push({ 
       shape, 
@@ -383,17 +358,12 @@ function startLevel(){
       height:maxY-minY+1
     });
 
-    cx+=w+cell*0.6;
+    cx+=w+cell*0.5;
     rowH=Math.max(rowH,h);
   });
 
-  let bottom=0;
-  pieces.forEach(p=>p.shape.forEach(b=>bottom=Math.max(bottom,p.y+b.y*cell+cell)));
-
   gridX=canvas.width/2-gridSize*cell/2;
-  gridY=Math.min(bottom+GAP,canvas.height-BOARD_PIXEL-40);
-
-  homeBtn.style.bottom = (canvas.height - gridY - gridSize*cell - 70) + "px";
+  gridY=50;
 
   startTime=Date.now();
   elapsedTime=0;
@@ -402,7 +372,6 @@ function startLevel(){
   updateBestScoreUI();
 }
 
-/* ===== タイマー ===== */
 function updateTimer(){
   if(cleared) return;
   elapsedTime=(Date.now()-startTime)/1000;
@@ -412,7 +381,6 @@ function updateTimer(){
   bestScoreUI.textContent=`BEST: ${best.toFixed(1)}s`;
 }
 
-/* ===== マウス＆タッチ操作 ===== */
 function handleStart(mx,my){
   if(cleared || reveal) return;
   for(const p of pieces){
@@ -444,7 +412,6 @@ canvas.addEventListener("mouseup",()=>{
   if(pieces.every(p=>p.placed)){ cleared=true; setTimeout(showClear,500); }
 });
 
-// タッチ版
 canvas.addEventListener("touchstart", e=>{
   const r=canvas.getBoundingClientRect();
   const touch = e.touches[0];
@@ -466,7 +433,6 @@ canvas.addEventListener("touchend", e=>{
   if(pieces.every(p=>p.placed)){ cleared=true; setTimeout(showClear,500); }
 });
 
-/* ===== 判定 ===== */
 function canPlace(p){
   for(const b of p.shape){
     const gx=Math.round((p.x+b.x*cell-gridX)/cell);
@@ -475,7 +441,7 @@ function canPlace(p){
 
     for(const o of pieces){ if(o!==p && o.placed) for(const ob of o.shape){
       const ogx=Math.round((o.x+ob.x*cell-gridX)/cell);
-      const ogy=Math.round((o.y+ob.y*cell*cell)/cell); // typo修正
+      const ogy=Math.round((o.y+ob.y*cell)/cell);
       if(gx===ogx && gy===ogy) return false;
     }}
   }
@@ -483,7 +449,6 @@ function canPlace(p){
 }
 function snap(p){ const b=p.shape[0]; const gx=Math.round((p.x+b.x*cell-gridX)/cell); const gy=Math.round((p.y+b.y*cell-gridY)/cell); p.x=gridX+gx*cell-b.x*cell; p.y=gridY+gy*cell-b.y*cell; }
 
-/* ===== CLEAR ===== */
 function showClear(){
   clearInterval(timerInterval);
   gameUI.style.display="none";
@@ -505,23 +470,20 @@ function showClear(){
   clearUI.style.display="flex";
 }
 
-/* ===== GAME OVER ===== */
 function showGameOver(){
   cleared=true;
   gameUI.style.display="none";
   document.getElementById("gameOver").style.display="flex";
 }
 
-/* ===== ベストスコア更新 ===== */
 function updateBestScoreUI(){ 
   const key=`levelL1-${level}`; 
   const best=bestScores[key]||0; 
   bestScoreUI.textContent=`BEST: ${best.toFixed(1)}s`; 
 }
 
-/* ===== 描画 ===== */
 function draw(){
-  ctx.clearRect(0,0,900,900);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
   ctx.strokeStyle="#000";
   for(let i=1;i<gridSize;i++){
@@ -538,53 +500,4 @@ function draw(){
 
     if(!reveal){ 
       p.shape.forEach(b=>{ 
-        const px=p.x+b.x*cell; 
-        const py=p.y+b.y*cell; 
-        ctx.strokeStyle="#000"; 
-        ctx.strokeRect(px,py,cell,cell); 
-      }); 
-      ctx.restore(); 
-      return; 
-    }
-
-    if(p.placed){
-      ctx.fillStyle="#000";
-      p.shape.forEach(b=>{
-        const px=p.x+b.x*cell;
-        const py=p.y+b.y*cell;
-        ctx.fillRect(px,py,cell,cell);
-      });
-
-      ctx.strokeStyle="#fff";
-      ctx.lineWidth=2;
-      const dirs = [{dx:0,dy:-1},{dx:1,dy:0},{dx:0,dy:1},{dx:-1,dy:0}];
-      p.shape.forEach(b=>{
-        const px=p.x+b.x*cell;
-        const py=p.y+b.y*cell;
-        dirs.forEach((d,i)=>{
-          const nx=b.x+d.dx;
-          const ny=b.y+d.dy;
-          if(!p.shape.some(bb=>bb.x===nx && bb.y===ny)){
-            ctx.beginPath();
-            switch(i){
-              case 0: ctx.moveTo(px,py); ctx.lineTo(px+cell,py); break;
-              case 1: ctx.moveTo(px+cell,py); ctx.lineTo(px+cell,py+cell); break;
-              case 2: ctx.moveTo(px+cell,py+cell); ctx.lineTo(px,py+cell); break;
-              case 3: ctx.moveTo(px,py+cell); ctx.lineTo(px,py); break;
-            }
-            ctx.stroke();
-          }
-        });
-      });
-      ctx.lineWidth=1;
-    }
-
-    ctx.restore();
-  });
-
-  requestAnimationFrame(draw);
-}
-draw();
-</script>
-</body>
-</html>
+        const px=p
