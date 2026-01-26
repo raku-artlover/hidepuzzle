@@ -9,11 +9,10 @@ body{
   margin:0;
   background:#fff;
   font-family: Helvetica, Arial, sans-serif;
-  touch-action: none; /* スマホでのスクロール防止 */
+  touch-action: none;
   display:flex;
   justify-content:center;
 }
-
 .screen{
   position:absolute;
   inset:0;
@@ -24,14 +23,12 @@ body{
   background:#fff;
   z-index:5;
 }
-
 h1{
   font-size:48px;
   letter-spacing:0.05em;
   margin-bottom:20px;
   text-align:center;
 }
-
 .btn{
   padding:12px 40px;
   border:2px solid #000;
@@ -41,7 +38,6 @@ h1{
   margin:5px;
   user-select:none;
 }
-
 #fade{
   position:absolute;
   inset:0;
@@ -51,7 +47,6 @@ h1{
   transition:opacity 0.5s ease-in-out;
   z-index:10;
 }
-
 #game{
   display:none;
   flex-direction:column;
@@ -60,7 +55,6 @@ h1{
   width:100%;
   max-width:500px;
 }
-
 canvas{
   background:#fff;
   touch-action:none;
@@ -69,8 +63,6 @@ canvas{
   height:auto;
   margin-top:10px;
 }
-
-/* タイマー/スコア */
 #timer{
   position:absolute;
   top:10px;
@@ -79,62 +71,50 @@ canvas{
   font-size:20px;
   font-weight:bold;
 }
-
 #bestScoreUI{
   position:absolute;
   top:10px;
   right:10px;
   font-size:16px;
 }
-
-/* HOME / RESET */
 #home{ position:absolute; top:10px; right:10px; }
 #reset{ position:absolute; top:10px; left:10px; }
-
-/* スペースキー残数表示（黒丸） */
 #spaceLife{
   display:flex;
   gap:10px;
   margin:8px 0;
   justify-content:center;
 }
-
 .lifeDot{
   width:20px;
   height:20px;
   border-radius:50%;
   background:#000;
 }
-
-/* REVEALボタン */
 #revealBtnContainer{
   display:flex;
   justify-content:center;
   margin-top:10px;
   margin-bottom:10px;
 }
-
 #levelButtons button:disabled{ opacity:0.3; cursor:not-allowed; }
 #levelButtons{ display:flex; flex-wrap:wrap; justify-content:center; max-width:300px; margin:10px 0; }
 </style>
 </head>
 <body>
 
-<!-- タイトル画面 -->
 <div id="title" class="screen">
   <h1>HIDE PUZZLE</h1>
   <button id="start" class="btn">START</button>
   <button id="menu" class="btn">MENU</button>
 </div>
 
-<!-- メニュー画面 -->
 <div id="menuScreen" class="screen" style="display:none; flex-direction:column;">
   <h1>SELECT LEVEL</h1>
   <div id="levelButtons"></div>
   <button id="menuBack" class="btn">BACK</button>
 </div>
 
-<!-- クリア画面 -->
 <div id="clear" class="screen" style="display:none">
   <h1 id="clearText"></h1>
   <p id="scoreText" style="font-size:20px;"></p>
@@ -143,7 +123,6 @@ canvas{
   <button id="clearHome" class="btn">HOME</button>
 </div>
 
-<!-- GAME OVER画面 -->
 <div id="gameOver" class="screen" style="display:none">
   <h1>GAME OVER</h1>
   <button id="goHome" class="btn">HOME</button>
@@ -167,8 +146,6 @@ canvas{
 </div>
 
 <script>
-// --- ここからJSは元コードほぼそのまま ---
-
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
@@ -381,110 +358,8 @@ function updateTimer(){
   bestScoreUI.textContent=`BEST: ${best.toFixed(1)}s`;
 }
 
-function handleStart(mx,my){
-  if(cleared || reveal) return;
-  for(const p of pieces){
-    for(const b of p.shape){
-      const px=p.x+b.x*cell, py=p.y+b.y*cell;
-      if(mx>px&&mx<px+cell&&my>py&&my<py+cell){
-        if(p.placed){ p.placed=false; p.x=p.homeX; p.y=p.homeY; return; }
-        dragging=p; ox=mx-p.x; oy=my-p.y; return;
-      }
-    }
-  }
-}
-
-canvas.addEventListener("mousedown", e=>{
-  const r=canvas.getBoundingClientRect();
-  handleStart(e.clientX-r.left, e.clientY-r.top);
-});
-canvas.addEventListener("mousemove", e=>{
-  if(!dragging) return;
-  const r=canvas.getBoundingClientRect();
-  dragging.x=e.clientX-r.left-ox;
-  dragging.y=e.clientY-r.top-oy;
-});
-canvas.addEventListener("mouseup",()=>{
-  if(!dragging) return;
-  if(canPlace(dragging)){ snap(dragging); dragging.placed=true; }
-  else{ dragging.x=dragging.homeX; dragging.y=dragging.homeY; }
-  dragging=null;
-  if(pieces.every(p=>p.placed)){ cleared=true; setTimeout(showClear,500); }
-});
-
-canvas.addEventListener("touchstart", e=>{
-  const r=canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  handleStart(touch.clientX-r.left, touch.clientY-r.top);
-});
-canvas.addEventListener("touchmove", e=>{
-  if(!dragging) return;
-  e.preventDefault();
-  const r=canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  dragging.x = touch.clientX - r.left - ox;
-  dragging.y = touch.clientY - r.top - oy;
-},{passive:false});
-canvas.addEventListener("touchend", e=>{
-  if(!dragging) return;
-  if(canPlace(dragging)){ snap(dragging); dragging.placed=true; }
-  else{ dragging.x=dragging.homeX; dragging.y=dragging.homeY; }
-  dragging=null;
-  if(pieces.every(p=>p.placed)){ cleared=true; setTimeout(showClear,500); }
-});
-
-function canPlace(p){
-  for(const b of p.shape){
-    const gx=Math.round((p.x+b.x*cell-gridX)/cell);
-    const gy=Math.round((p.y+b.y*cell-gridY)/cell);
-    if(gx<0||gy<0||gx>=gridSize||gy>=gridSize) return false;
-
-    for(const o of pieces){ if(o!==p && o.placed) for(const ob of o.shape){
-      const ogx=Math.round((o.x+ob.x*cell-gridX)/cell);
-      const ogy=Math.round((o.y+ob.y*cell)/cell);
-      if(gx===ogx && gy===ogy) return false;
-    }}
-  }
-  return true;
-}
-function snap(p){ const b=p.shape[0]; const gx=Math.round((p.x+b.x*cell-gridX)/cell); const gy=Math.round((p.y+b.y*cell-gridY)/cell); p.x=gridX+gx*cell-b.x*cell; p.y=gridY+gy*cell-b.y*cell; }
-
-function showClear(){
-  clearInterval(timerInterval);
-  gameUI.style.display="none";
-  clearText.textContent=`${gridSize}×${gridSize} CLEAR`;
-
-  const key=`levelL1-${level}`;
-  if(!bestScores[key] || elapsedTime<bestScores[key]){
-    bestScores[key]=elapsedTime; 
-    localStorage.setItem("bestScores", JSON.stringify(bestScores));
-  }
-
-  if(level>reachedLevel.L1){
-    reachedLevel.L1=level; 
-    localStorage.setItem("reachedLevel", JSON.stringify(reachedLevel));
-  }
-
-  const best=bestScores[key]||0;
-  scoreText.textContent=`TIME: ${elapsedTime.toFixed(1)}s / BEST: ${best.toFixed(1)}s`;
-  clearUI.style.display="flex";
-}
-
-function showGameOver(){
-  cleared=true;
-  gameUI.style.display="none";
-  document.getElementById("gameOver").style.display="flex";
-}
-
-function updateBestScoreUI(){ 
-  const key=`levelL1-${level}`; 
-  const best=bestScores[key]||0; 
-  bestScoreUI.textContent=`BEST: ${best.toFixed(1)}s`; 
-}
-
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
   ctx.strokeStyle="#000";
   for(let i=1;i<gridSize;i++){
     ctx.beginPath(); ctx.moveTo(gridX+i*cell,gridY); ctx.lineTo(gridX+i*cell,gridY+gridSize*cell); ctx.stroke();
@@ -500,4 +375,37 @@ function draw(){
 
     if(!reveal){ 
       p.shape.forEach(b=>{ 
-        const px=p
+        const px=p.x+b.x*cell; 
+        const py=p.y+b.y*cell; 
+        ctx.strokeStyle="#000"; 
+        ctx.strokeRect(px,py,cell,cell); 
+      }); 
+      ctx.restore(); 
+      return; 
+    }
+
+    if(p.placed){
+      ctx.fillStyle="#000";
+      p.shape.forEach(b=>{
+        const px=p.x+b.x*cell;
+        const py=p.y+b.y*cell;
+        ctx.fillRect(px,py,cell,cell);
+      });
+    } else {
+      ctx.strokeStyle="#000";
+      p.shape.forEach(b=>{
+        const px=p.x+b.x*cell;
+        const py=p.y+b.y*cell;
+        ctx.strokeRect(px,py,cell,cell);
+      });
+    }
+
+    ctx.restore();
+  });
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
