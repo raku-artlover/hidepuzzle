@@ -41,8 +41,6 @@ cursor:pointer;
 margin:5px;
 }
 
-/* GAME */
-
 #game{
 display:none;
 flex-direction:column;
@@ -84,22 +82,8 @@ margin-top:10px;
 border:2px solid #000;
 }
 
-#levelButtons{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-max-width:300px;
-}
-
-#levelButtons button:disabled{
-opacity:0.3;
-}
-
-#ruleText{
-max-width:400px;
-text-align:center;
-line-height:1.8;
-font-size:18px;
+#clearScreen{
+display:none;
 }
 
 </style>
@@ -110,39 +94,17 @@ font-size:18px;
 <div id="title" class="screen">
 <h1>HIDE PUZZLE</h1>
 <button id="start" class="btn">START</button>
-<button id="menu" class="btn">MENU</button>
-<button id="ruleBtn" class="btn">RULE</button>
 </div>
 
-<div id="ruleScreen" class="screen" style="display:none">
-<h1>RULE</h1>
-
-<div id="ruleText">
-
-パズルピースを動かして<br>
-中央のグリッドを完成させよう。<br><br>
-
-SPACE を押すと<br>
-答えが一瞬だけ見える。<br>
-タイム +5秒 / 残機 -1<br><br>
-
-残機0で GAME OVER
-
-</div>
-
-<button id="ruleBack" class="btn">BACK</button>
-</div>
-
-<div id="menuScreen" class="screen" style="display:none">
-<h1>SELECT LEVEL</h1>
-<div id="levelButtons"></div>
-<button id="menuBack" class="btn">BACK</button>
+<div id="clearScreen" class="screen">
+<h1>CLEAR</h1>
+<div id="clearScore"></div>
+<div id="clearBest"></div>
+<button id="nextBtn" class="btn">NEXT</button>
 </div>
 
 <div id="game">
 <div id="topUI">
-<button id="reset" class="btn">RESET</button>
-<button id="home" class="btn">HOME</button>
 <div id="timer">TIME: 0.0s</div>
 <div id="bestScoreUI">BEST: 0.0s</div>
 </div>
@@ -157,281 +119,229 @@ SPACE を押すと<br>
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
-let LEVELS = [4,5,6,7];
-let levels = LEVELS;
-let level = 0;
-let cleared = false;
-let reveal = false;
+let LEVELS=[4,5,6,7];
+let level=0;
 
-let gridSize, cell, gridX, gridY;
-let pieces = [];
-let dragging = null;
-let ox = 0, oy = 0;
+let gridSize,cell,gridX,gridY;
 
-const BOARD_PIXEL = 300;
+let pieces=[];
+let dragging=null;
+let ox=0,oy=0;
 
-const title = document.getElementById("title");
-const ruleScreen = document.getElementById("ruleScreen");
-const menuScreen = document.getElementById("menuScreen");
-const levelButtonsDiv = document.getElementById("levelButtons");
-const menuBack = document.getElementById("menuBack");
+let startTime;
+let elapsedTime=0;
 
-const gameUI = document.getElementById("game");
+let bestScores=JSON.parse(localStorage.getItem("bestScores")||"{}");
 
-const timerUI = document.getElementById("timer");
-const bestScoreUI = document.getElementById("bestScoreUI");
+const timerUI=document.getElementById("timer");
+const bestScoreUI=document.getElementById("bestScoreUI");
 
-const homeBtn = document.getElementById("home");
+const title=document.getElementById("title");
+const game=document.getElementById("game");
+const clearScreen=document.getElementById("clearScreen");
 
-const spaceLifeDiv = document.getElementById("spaceLife");
-
-const resetBtn = document.getElementById("reset");
-
-let startTime, elapsedTime=0;
-let timerInterval;
-
-let bestScores = JSON.parse(localStorage.getItem("bestScores")||"{}");
-let reachedLevel = JSON.parse(localStorage.getItem("reachedLevel") || '{"L1":0}');
-
-let spaceLife = 4;
-let spacePressed = false;
-
-function show(a,b){
-a.style.display="none";
-b.style.display="flex";
-}
+const clearScore=document.getElementById("clearScore");
+const clearBest=document.getElementById("clearBest");
 
 document.getElementById("start").onclick=()=>{
-show(title,gameUI);
+title.style.display="none";
+game.style.display="flex";
 startLevel();
 };
 
-document.getElementById("menu").onclick=()=>{
-show(title,menuScreen);
-renderLevelButtons();
-};
-
-document.getElementById("ruleBtn").onclick=()=>{
-show(title,ruleScreen);
-};
-
-document.getElementById("ruleBack").onclick=()=>{
-show(ruleScreen,title);
-};
-
-menuBack.onclick=()=>{
-show(menuScreen,title);
-};
-
-resetBtn.onclick=startLevel;
-
-homeBtn.onclick=()=>{
-startLevel();
-show(gameUI,title);
-};
-
-function renderSpaceLife(){
-spaceLifeDiv.innerHTML="";
-for(let i=0;i<spaceLife;i++){
-const dot=document.createElement("div");
-dot.className="lifeDot";
-spaceLifeDiv.appendChild(dot);
-}
-}
-
-function renderLevelButtons(){
-
-levelButtonsDiv.innerHTML="";
-
-LEVELS.forEach((size,i)=>{
-
-const btn=document.createElement("button");
-
-btn.className="btn";
-btn.textContent=`${size}×${size}`;
-
-if(i>reachedLevel.L1) btn.disabled=true;
-
-btn.onclick=()=>{
-levels=LEVELS;
-level=i;
-show(menuScreen,gameUI);
+document.getElementById("nextBtn").onclick=()=>{
+clearScreen.style.display="none";
+game.style.display="flex";
+level++;
 startLevel();
 };
-
-levelButtonsDiv.appendChild(btn);
-
-});
-
-}
 
 function splitBoard(size){
+
 const cells=[];
-for(let y=0;y<size;y++)for(let x=0;x<size;x++)cells.push({x,y,used:false});
+for(let y=0;y<size;y++)
+for(let x=0;x<size;x++)
+cells.push({x,y,used:false});
+
 const result=[];
+
 while(cells.some(c=>!c.used)){
+
 const start=cells.find(c=>!c.used);
 start.used=true;
-const piece=[start];
-const maxPieceSize = Math.min(size, 2 + Math.floor(size/3));
-const target = Math.floor(Math.random()*maxPieceSize)+2;
 
-while(piece.length < target){
-const opts = cells.filter(n=>!n.used && piece.some(p=>Math.abs(n.x-p.x)+Math.abs(n.y-p.y)===1));
-if(!opts.length) break;
-const n = opts[Math.floor(Math.random()*opts.length)];
+const piece=[start];
+const target=Math.floor(Math.random()*3)+2;
+
+while(piece.length<target){
+
+const opts=cells.filter(n=>
+!n.used &&
+piece.some(p=>Math.abs(n.x-p.x)+Math.abs(n.y-p.y)==1)
+);
+
+if(!opts.length)break;
+
+const n=opts[Math.floor(Math.random()*opts.length)];
 n.used=true;
 piece.push(n);
+
 }
+
 result.push(piece);
+
 }
+
 return result;
+
 }
 
 function startLevel(){
-cleared=false;
-reveal=false;
-spaceLife=4;
-renderSpaceLife();
 
-gridSize=levels[level];
-cell=Math.floor(BOARD_PIXEL/gridSize);
+gridSize=LEVELS[level];
+cell=Math.floor(300/gridSize);
+
 pieces=[];
 
 const shapes=splitBoard(gridSize);
-let cx=20,cy=20,rowH=0;
+
+let cx=20;
+let cy=420;
+let rowH=0;
 
 shapes.forEach(shape=>{
+
 const minX=Math.min(...shape.map(b=>b.x));
 const minY=Math.min(...shape.map(b=>b.y));
 const maxX=Math.max(...shape.map(b=>b.x));
 const maxY=Math.max(...shape.map(b=>b.y));
+
 const w=(maxX-minX+1)*cell;
 const h=(maxY-minY+1)*cell;
 
-if(cx+w>canvas.width-20){cx=20;cy+=rowH+cell*0.5;rowH=0;}
+if(cx+w>canvas.width-20){
+cx=20;
+cy+=rowH+20;
+rowH=0;
+}
 
-pieces.push({ 
-shape, 
-x:cx-minX*cell, 
-y:cy-minY*cell, 
-homeX:cx-minX*cell, 
-homeY:cy-minY*cell, 
-placed:false,
-rotation:0,
-mustRotate:false,
-width:maxX-minX+1,
-height:maxY-minY+1
+pieces.push({
+shape,
+x:cx-minX*cell,
+y:cy-minY*cell,
+placed:false
 });
 
-cx+=w+cell*0.5;
+cx+=w+20;
 rowH=Math.max(rowH,h);
+
 });
 
 gridX=canvas.width/2-gridSize*cell/2;
 gridY=80;
 
 startTime=Date.now();
-elapsedTime=0;
-clearInterval(timerInterval);
-timerInterval=setInterval(updateTimer,50);
-}
 
-function updateTimer(){
-if(cleared) return;
-elapsedTime=(Date.now()-startTime)/1000;
-timerUI.textContent=`TIME: ${elapsedTime.toFixed(1)}s`;
 }
-
-window.addEventListener("keydown",e=>{
-if(e.code==="Space"&&!spacePressed){
-spacePressed=true;
-reveal=true;
-elapsedTime+=5;
-spaceLife--;
-renderSpaceLife();
-}
-});
-
-window.addEventListener("keyup",e=>{
-if(e.code==="Space"){
-spacePressed=false;
-reveal=false;
-}
-});
 
 canvas.onmousedown=e=>{
+
 const rect=canvas.getBoundingClientRect();
 const mx=e.clientX-rect.left;
 const my=e.clientY-rect.top;
 
 pieces.forEach(p=>{
 p.shape.forEach(b=>{
+
 const px=p.x+b.x*cell;
 const py=p.y+b.y*cell;
+
 if(mx>px&&mx<px+cell&&my>py&&my<py+cell){
 dragging=p;
 ox=mx-p.x;
 oy=my-p.y;
 }
+
 });
 });
+
 };
 
 canvas.onmousemove=e=>{
-if(!dragging) return;
+
+if(!dragging)return;
 
 const rect=canvas.getBoundingClientRect();
-const mx=e.clientX-rect.left;
-const my=e.clientY-rect.top;
 
-dragging.x=mx-ox;
-dragging.y=my-oy;
+dragging.x=e.clientX-rect.left-ox;
+dragging.y=e.clientY-rect.top-oy;
+
 };
 
 canvas.onmouseup=()=>{
 
-if(dragging){
+if(!dragging)return;
 
-const snapRange = cell*0.6;
+const snapRange=cell*0.6;
 
 dragging.shape.forEach(b=>{
 
-const px = dragging.x + b.x*cell;
-const py = dragging.y + b.y*cell;
+const px=dragging.x+b.x*cell;
+const py=dragging.y+b.y*cell;
 
-const gx = Math.round((px-gridX)/cell);
-const gy = Math.round((py-gridY)/cell);
-
-const targetX = gridX + gx*cell - b.x*cell;
-const targetY = gridY + gy*cell - b.y*cell;
+const gx=Math.round((px-gridX)/cell);
+const gy=Math.round((py-gridY)/cell);
 
 if(
-gx>=0 && gx<gridSize &&
-gy>=0 && gy<gridSize &&
-Math.abs(px-(gridX+gx*cell))<snapRange &&
-Math.abs(py-(gridY+gy*cell))<snapRange
+gx>=0&&gx<gridSize&&
+gy>=0&&gy<gridSize&&
+Math.abs(px-(gridX+gx*cell))<snapRange
 ){
-dragging.x = targetX;
-dragging.y = targetY;
-dragging.placed = true;
+
+dragging.x=gridX+gx*cell-b.x*cell;
+dragging.y=gridY+gy*cell-b.y*cell;
+dragging.placed=true;
+
 }
 
 });
 
-}
-
 dragging=null;
 
+checkClear();
+
 };
+
+function checkClear(){
+
+if(pieces.every(p=>p.placed)){
+
+elapsedTime=(Date.now()-startTime)/1000;
+
+let best=bestScores[level]||9999;
+
+if(elapsedTime<best){
+bestScores[level]=elapsedTime;
+localStorage.setItem("bestScores",JSON.stringify(bestScores));
+best=elapsedTime;
+}
+
+clearScore.innerText="TIME : "+elapsedTime.toFixed(1)+"s";
+clearBest.innerText="BEST : "+best.toFixed(1)+"s";
+
+game.style.display="none";
+clearScreen.style.display="flex";
+
+}
+
+}
 
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
-ctx.strokeStyle="#000";
-
 for(let i=1;i<gridSize;i++){
+
 ctx.beginPath();
 ctx.moveTo(gridX+i*cell,gridY);
 ctx.lineTo(gridX+i*cell,gridY+gridSize*cell);
@@ -441,6 +351,7 @@ ctx.beginPath();
 ctx.moveTo(gridX,gridY+i*cell);
 ctx.lineTo(gridX+gridSize*cell,gridY+i*cell);
 ctx.stroke();
+
 }
 
 ctx.lineWidth=3;
@@ -449,36 +360,18 @@ ctx.lineWidth=1;
 
 pieces.forEach(p=>{
 
-ctx.save();
-
-ctx.translate(p.x+cell/2,p.y+cell/2);
-ctx.rotate(p.rotation*Math.PI/180);
-ctx.translate(-p.x-cell/2,-p.y-cell/2);
-
-if(!reveal){
-
 p.shape.forEach(b=>{
+
 const px=p.x+b.x*cell;
 const py=p.y+b.y*cell;
+
 ctx.strokeRect(px,py,cell,cell);
-});
-
-ctx.restore();
-return;
-
-}
-
-ctx.fillStyle="#000";
-
-p.shape.forEach(b=>{
-const px=p.x+b.x*cell;
-const py=p.y+b.y*cell;
-ctx.fillRect(px,py,cell,cell);
-});
-
-ctx.restore();
 
 });
+
+});
+
+timerUI.innerText="TIME: "+((Date.now()-startTime)/1000).toFixed(1)+"s";
 
 requestAnimationFrame(draw);
 
