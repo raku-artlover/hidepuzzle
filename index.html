@@ -4,172 +4,162 @@
 <meta charset="UTF-8">
 <title>HIDE PUZZLE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 
 body{
-margin:0;
-background:#fff;
-font-family: Helvetica, Arial, sans-serif;
-display:flex;
-justify-content:center;
+  margin:0;
+  background:#fff;
+  font-family: Helvetica, Arial, sans-serif;
+  touch-action:none;
+  display:flex;
+  justify-content:center;
 }
 
+/* 画面 */
 .screen{
-position:absolute;
-inset:0;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-background:#fff;
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:#fff;
+  z-index:5;
 }
 
 h1{
-font-size:48px;
-margin-bottom:20px;
+  font-size:48px;
+  letter-spacing:0.05em;
+  margin-bottom:20px;
+  text-align:center;
 }
 
 .btn{
-padding:12px 40px;
-border:2px solid #000;
-font-size:18px;
-background:none;
-cursor:pointer;
-margin:5px;
+  padding:12px 40px;
+  border:2px solid #000;
+  font-size:18px;
+  background:none;
+  cursor:pointer;
+  margin:5px;
 }
+
+/* ゲームUI */
 
 #game{
-display:none;
-flex-direction:column;
-align-items:center;
-width:100%;
-max-width:500px;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+  max-width:500px;
 }
 
-/* 上部UI */
+/* 上UIバー */
 
 #topUI{
-width:90%;
-max-width:450px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-top:10px;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:10px;
 }
 
-#leftUI,
-#centerUI,
-#rightUI{
-display:flex;
-align-items:center;
-gap:10px;
-}
-
-#centerUI{
-flex-direction:column;
-}
-
-#timer{
-font-size:20px;
-font-weight:bold;
-}
-
-#bestScoreUI{
-font-size:16px;
+#timer,#bestScoreUI{
+  font-size:18px;
+  font-weight:bold;
 }
 
 /* 残機 */
 
 #spaceLife{
-display:flex;
-gap:6px;
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin:6px 0;
 }
 
 .lifeDot{
-width:18px;
-height:18px;
-border-radius:50%;
-background:#000;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#000;
 }
 
-/* canvas */
-
 canvas{
-background:#fff;
-width:90%;
-max-width:450px;
-margin-top:15px;
+  background:#fff;
+  width:90%;
+  max-width:450px;
+  margin-top:10px;
 }
 
 /* reveal */
 
 #revealBtnContainer{
-margin-top:10px;
+  display:flex;
+  justify-content:center;
+  margin-top:10px;
 }
 
 #levelButtons{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  max-width:300px;
 }
 
 #levelButtons button:disabled{
-opacity:0.3;
+  opacity:0.3;
+}
+
+/* ルール画面 */
+
+#ruleText{
+  max-width:400px;
+  line-height:1.8;
+  text-align:center;
+  font-size:18px;
 }
 
 </style>
 </head>
-
 <body>
 
-<!-- TITLE -->
+<!-- タイトル -->
 
 <div id="title" class="screen">
-
 <h1>HIDE PUZZLE</h1>
 
 <button id="start" class="btn">START</button>
-
 <button id="menu" class="btn">MENU</button>
-
-<button id="rulesBtn" class="btn">RULES</button>
-
-</div>
-
-
-<!-- RULES -->
-
-<div id="rulesScreen" class="screen" style="display:none">
-
-<h1>RULES</h1>
-
-<p style="max-width:320px;text-align:center;line-height:1.7">
-
-ピースをドラッグして  
-正しい位置に並べよう  
-
-<br><br>
-
-REVEALを押すと  
-完成形を見ることができる  
-
-<br><br>
-
-しかし  
-TIMEが +5秒  
-
-<br><br>
-
-REVEALは4回まで  
-使い切るとGAME OVER
-
-</p>
-
-<button id="rulesBack" class="btn">BACK</button>
+<button id="rule" class="btn">RULE</button>
 
 </div>
 
+<!-- ルール -->
+
+<div id="ruleScreen" class="screen" style="display:none">
+
+<h1>RULE</h1>
+
+<div id="ruleText">
+
+パズルピースを動かして<br>
+中央のグリッドを完成させよう。<br><br>
+
+SPACE または REVEAL を押すと<br>
+一瞬だけ答えが見える。<br>
+ただし残機が1つ減り<br>
+タイムに +5秒される。<br><br>
+
+残機が0になると<br>
+GAME OVER。
+
+</div>
+
+<button id="ruleBack" class="btn">BACK</button>
+
+</div>
 
 <!-- MENU -->
 
@@ -183,23 +173,19 @@ REVEALは4回まで
 
 </div>
 
-
 <!-- CLEAR -->
 
 <div id="clear" class="screen" style="display:none">
 
 <h1 id="clearText"></h1>
 
-<p id="scoreText"></p>
+<p id="scoreText" style="font-size:20px;"></p>
 
-<button id="next" class="btn">NEXT</button>
-
+<button id="next" class="btn">NEXT STAGE</button>
 <button id="retry" class="btn">RETRY</button>
-
 <button id="clearHome" class="btn">HOME</button>
 
 </div>
-
 
 <!-- GAME OVER -->
 
@@ -208,11 +194,9 @@ REVEALは4回まで
 <h1>GAME OVER</h1>
 
 <button id="goHome" class="btn">HOME</button>
-
 <button id="goRetry" class="btn">RETRY</button>
 
 </div>
-
 
 <!-- GAME -->
 
@@ -220,63 +204,27 @@ REVEALは4回まで
 
 <div id="topUI">
 
-<div id="leftUI">
-
+<button id="reset" class="btn">RESET</button>
 <button id="home" class="btn">HOME</button>
 
-</div>
-
-<div id="centerUI">
-
 <div id="timer">TIME: 0.0s</div>
-
-<div id="spaceLife"></div>
-
-</div>
-
-<div id="rightUI">
-
 <div id="bestScoreUI">BEST: 0.0s</div>
 
-<button id="reset" class="btn">RESET</button>
-
 </div>
 
-</div>
+<div id="spaceLife"></div>
 
 <canvas id="c" width="450" height="450"></canvas>
 
 <div id="revealBtnContainer">
-
 <button id="revealBtn" class="btn">REVEAL</button>
-
 </div>
 
 </div>
-
 
 <script>
 
-/* RULES画面 */
-
-const title=document.getElementById("title");
-const rulesScreen=document.getElementById("rulesScreen");
-
-document.getElementById("rulesBtn").onclick=()=>{
-
-title.style.display="none";
-rulesScreen.style.display="flex";
-
-};
-
-document.getElementById("rulesBack").onclick=()=>{
-
-rulesScreen.style.display="none";
-title.style.display="flex";
-
-};
-
-/* ここから元コード */
+/* 元コードそのまま */
 
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
@@ -289,67 +237,250 @@ let reveal = false;
 
 let gridSize, cell, gridX, gridY;
 let pieces = [];
+let dragging = null;
+let ox = 0, oy = 0;
+
+const BOARD_PIXEL = 300;
+
+const title = document.getElementById("title");
+const ruleScreen = document.getElementById("ruleScreen");
+const menuScreen = document.getElementById("menuScreen");
+const levelButtonsDiv = document.getElementById("levelButtons");
+const menuBack = document.getElementById("menuBack");
+
+const gameUI = document.getElementById("game");
+const clearUI = document.getElementById("clear");
+
+const clearText = document.getElementById("clearText");
+const scoreText = document.getElementById("scoreText");
 
 const timerUI = document.getElementById("timer");
 const bestScoreUI = document.getElementById("bestScoreUI");
+
+const homeBtn = document.getElementById("home");
+
 const spaceLifeDiv = document.getElementById("spaceLife");
 
-let startTime;
-let elapsedTime=0;
+const revealBtn = document.getElementById("revealBtn");
+const resetBtn = document.getElementById("reset");
 
+let startTime, elapsedTime=0;
 let timerInterval;
 
+let bestScores = JSON.parse(localStorage.getItem("bestScores")||"{}");
+let reachedLevel = JSON.parse(localStorage.getItem("reachedLevel") || '{"L1":0}');
+
 let spaceLife = 4;
+let spacePressed = false;
+
+/* 画面遷移 */
+
+function show(a,b){
+a.style.display="none";
+b.style.display="flex";
+}
+
+/* ボタン */
+
+document.getElementById("start").onclick=()=>{
+show(title,gameUI);
+startLevel();
+};
+
+document.getElementById("menu").onclick=()=>{
+show(title,menuScreen);
+renderLevelButtons();
+};
+
+document.getElementById("rule").onclick=()=>{
+show(title,ruleScreen);
+};
+
+document.getElementById("ruleBack").onclick=()=>{
+show(ruleScreen,title);
+};
+
+menuBack.onclick=()=>{
+show(menuScreen,title);
+};
+
+document.getElementById("retry").onclick=()=>{
+show(clearUI,gameUI);
+startLevel();
+};
+
+resetBtn.onclick=startLevel;
+
+homeBtn.onclick=()=>{
+startLevel();
+show(gameUI,title);
+};
 
 /* 残機 */
 
 function renderSpaceLife(){
-
 spaceLifeDiv.innerHTML="";
-
 for(let i=0;i<spaceLife;i++){
-
 const dot=document.createElement("div");
-
 dot.className="lifeDot";
-
 spaceLifeDiv.appendChild(dot);
+}
+}
+
+/* レベルボタン */
+
+function renderLevelButtons(){
+
+levelButtonsDiv.innerHTML="";
+
+LEVELS.forEach((size,i)=>{
+
+const btn=document.createElement("button");
+
+btn.className="btn";
+btn.textContent=`${size}×${size}`;
+
+if(i>reachedLevel.L1) btn.disabled=true;
+
+btn.onclick=()=>{
+levels=LEVELS;
+level=i;
+show(menuScreen,gameUI);
+startLevel();
+};
+
+levelButtonsDiv.appendChild(btn);
+
+});
 
 }
 
+/* 以下ゲームロジック完全そのまま */
+
+function splitBoard(size){
+const cells=[];
+for(let y=0;y<size;y++)
+for(let x=0;x<size;x++)
+cells.push({x,y,used:false});
+
+const result=[];
+
+while(cells.some(c=>!c.used)){
+
+const start=cells.find(c=>!c.used);
+
+start.used=true;
+
+const piece=[start];
+
+const maxPieceSize=Math.min(size,2+Math.floor(size/3));
+
+const target=Math.floor(Math.random()*maxPieceSize)+2;
+
+while(piece.length<target){
+
+const opts=cells.filter(n=>!n.used && piece.some(p=>Math.abs(n.x-p.x)+Math.abs(n.y-p.y)===1));
+
+if(!opts.length) break;
+
+const n=opts[Math.floor(Math.random()*opts.length)];
+
+n.used=true;
+
+piece.push(n);
+
 }
 
-/* ステージ */
+result.push(piece);
+
+}
+
+return result;
+
+}
 
 function startLevel(){
 
-spaceLife=4;
+cleared=false;
+reveal=false;
 
+spaceLife=4;
 renderSpaceLife();
 
-gridSize=LEVELS[level];
+gridSize=levels[level];
 
-cell=Math.floor(300/gridSize);
+cell=Math.floor(BOARD_PIXEL/gridSize);
+
+pieces=[];
+
+const shapes=splitBoard(gridSize);
+
+let cx=20,cy=20,rowH=0;
+
+shapes.forEach(shape=>{
+
+const minX=Math.min(...shape.map(b=>b.x));
+const minY=Math.min(...shape.map(b=>b.y));
+const maxX=Math.max(...shape.map(b=>b.x));
+const maxY=Math.max(...shape.map(b=>b.y));
+
+const w=(maxX-minX+1)*cell;
+const h=(maxY-minY+1)*cell;
+
+if(cx+w>canvas.width-20){
+cx=20;
+cy+=rowH+cell*0.5;
+rowH=0;
+}
+
+pieces.push({
+shape,
+x:cx-minX*cell,
+y:cy-minY*cell,
+homeX:cx-minX*cell,
+homeY:cy-minY*cell,
+placed:false,
+rotation:0,
+mustRotate:false,
+width:maxX-minX+1,
+height:maxY-minY+1
+});
+
+cx+=w+cell*0.5;
+
+rowH=Math.max(rowH,h);
+
+});
+
+gridX=canvas.width/2-gridSize*cell/2;
+gridY=50;
 
 startTime=Date.now();
+elapsedTime=0;
 
 clearInterval(timerInterval);
 
 timerInterval=setInterval(updateTimer,50);
 
-}
+updateBestScoreUI();
 
-/* タイマー */
+}
 
 function updateTimer(){
 
+if(cleared) return;
+
 elapsedTime=(Date.now()-startTime)/1000;
 
-timerUI.textContent="TIME: "+elapsedTime.toFixed(1)+"s";
+timerUI.textContent=`TIME: ${elapsedTime.toFixed(1)}s`;
+
+const key=`levelL1-${level}`;
+
+const best=bestScores[key]||0;
+
+bestScoreUI.textContent=`BEST: ${best.toFixed(1)}s`;
 
 }
-
-/* 描画 */
 
 function draw(){
 
@@ -362,6 +493,5 @@ requestAnimationFrame(draw);
 draw();
 
 </script>
-
 </body>
 </html>
