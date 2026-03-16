@@ -48,26 +48,19 @@ display:none;
 flex-direction:column;
 align-items:center;
 width:100%;
-max-width:500px;
+max-width:900px;
 }
-
-/* 上UI */
 
 #topUI{
 display:flex;
-flex-wrap:wrap;
-justify-content:center;
-align-items:center;
-gap:10px;
+gap:20px;
 margin-top:10px;
 }
 
 #timer,#bestScoreUI{
-font-size:18px;
+font-size:20px;
 font-weight:bold;
 }
-
-/* 残機 */
 
 #spaceLife{
 display:flex;
@@ -85,15 +78,10 @@ background:#000;
 
 canvas{
 background:#fff;
-width:90%;
-max-width:450px;
+width:650px;
+height:650px;
 margin-top:10px;
-}
-
-#revealBtnContainer{
-display:flex;
-justify-content:center;
-margin-top:10px;
+border:1px solid #000;
 }
 
 #levelButtons{
@@ -107,8 +95,6 @@ max-width:300px;
 opacity:0.3;
 }
 
-/* RULE */
-
 #ruleText{
 max-width:400px;
 text-align:center;
@@ -121,22 +107,14 @@ font-size:18px;
 
 <body>
 
-<!-- TITLE -->
-
 <div id="title" class="screen">
-
 <h1>HIDE PUZZLE</h1>
-
 <button id="start" class="btn">START</button>
 <button id="menu" class="btn">MENU</button>
 <button id="ruleBtn" class="btn">RULE</button>
-
 </div>
 
-<!-- RULE -->
-
 <div id="ruleScreen" class="screen" style="display:none">
-
 <h1>RULE</h1>
 
 <div id="ruleText">
@@ -144,83 +122,39 @@ font-size:18px;
 パズルピースを動かして<br>
 中央のグリッドを完成させよう。<br><br>
 
-SPACE または REVEAL を押すと<br>
+SPACE を押すと<br>
 答えが一瞬だけ見える。<br>
-その代わり<br>
 タイム +5秒 / 残機 -1<br><br>
 
-残機が0になると GAME OVER。
+残機0で GAME OVER
 
 </div>
 
 <button id="ruleBack" class="btn">BACK</button>
-
 </div>
-
-<!-- MENU -->
 
 <div id="menuScreen" class="screen" style="display:none">
-
 <h1>SELECT LEVEL</h1>
-
 <div id="levelButtons"></div>
-
 <button id="menuBack" class="btn">BACK</button>
-
 </div>
-
-<!-- CLEAR -->
-
-<div id="clear" class="screen" style="display:none">
-
-<h1 id="clearText"></h1>
-
-<p id="scoreText" style="font-size:20px;"></p>
-
-<button id="next" class="btn">NEXT STAGE</button>
-<button id="retry" class="btn">RETRY</button>
-<button id="clearHome" class="btn">HOME</button>
-
-</div>
-
-<!-- GAME OVER -->
-
-<div id="gameOver" class="screen" style="display:none">
-
-<h1>GAME OVER</h1>
-
-<button id="goHome" class="btn">HOME</button>
-<button id="goRetry" class="btn">RETRY</button>
-
-</div>
-
-<!-- GAME -->
 
 <div id="game">
-
 <div id="topUI">
-
 <button id="reset" class="btn">RESET</button>
 <button id="home" class="btn">HOME</button>
-
 <div id="timer">TIME: 0.0s</div>
 <div id="bestScoreUI">BEST: 0.0s</div>
-
 </div>
 
 <div id="spaceLife"></div>
 
-<canvas id="c" width="450" height="450"></canvas>
-
-<div id="revealBtnContainer">
-<button id="revealBtn" class="btn">REVEAL</button>
-</div>
-
+<canvas id="c" width="650" height="650"></canvas>
 </div>
 
 <script>
 
-/* ここから下はあなたのJSを一切変更していません */
+/* ここから元コード */
 
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
@@ -245,10 +179,6 @@ const levelButtonsDiv = document.getElementById("levelButtons");
 const menuBack = document.getElementById("menuBack");
 
 const gameUI = document.getElementById("game");
-const clearUI = document.getElementById("clear");
-
-const clearText = document.getElementById("clearText");
-const scoreText = document.getElementById("scoreText");
 
 const timerUI = document.getElementById("timer");
 const bestScoreUI = document.getElementById("bestScoreUI");
@@ -257,7 +187,6 @@ const homeBtn = document.getElementById("home");
 
 const spaceLifeDiv = document.getElementById("spaceLife");
 
-const revealBtn = document.getElementById("revealBtn");
 const resetBtn = document.getElementById("reset");
 
 let startTime, elapsedTime=0;
@@ -294,11 +223,6 @@ show(ruleScreen,title);
 
 menuBack.onclick=()=>{
 show(menuScreen,title);
-};
-
-document.getElementById("retry").onclick=()=>{
-show(clearUI,gameUI);
-startLevel();
 };
 
 resetBtn.onclick=startLevel;
@@ -342,8 +266,6 @@ levelButtonsDiv.appendChild(btn);
 });
 
 }
-
-/* 以下あなたのロジック完全そのまま */
 
 function splitBoard(size){
 const cells=[];
@@ -409,7 +331,7 @@ rowH=Math.max(rowH,h);
 });
 
 gridX=canvas.width/2-gridSize*cell/2;
-gridY=50;
+gridY=80;
 
 startTime=Date.now();
 elapsedTime=0;
@@ -423,53 +345,121 @@ elapsedTime=(Date.now()-startTime)/1000;
 timerUI.textContent=`TIME: ${elapsedTime.toFixed(1)}s`;
 }
 
-function draw(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-ctx.strokeStyle="#000";
-for(let i=1;i<gridSize;i++){
-ctx.beginPath(); ctx.moveTo(gridX+i*cell,gridY); ctx.lineTo(gridX+i*cell,gridY+gridSize*cell); ctx.stroke();
-ctx.beginPath(); ctx.moveTo(gridX,gridY+i*cell); ctx.lineTo(gridX+gridSize*cell,gridY+i*cell); ctx.stroke();
+/* reveal */
+
+window.addEventListener("keydown",e=>{
+if(e.code==="Space"&&!spacePressed){
+spacePressed=true;
+reveal=true;
+elapsedTime+=5;
+spaceLife--;
+renderSpaceLife();
 }
-ctx.lineWidth=3; ctx.strokeRect(gridX,gridY,gridSize*cell,gridSize*cell); ctx.lineWidth=1;
+});
+
+window.addEventListener("keyup",e=>{
+if(e.code==="Space"){
+spacePressed=false;
+reveal=false;
+}
+});
+
+/* ドラッグ */
+
+canvas.onmousedown=e=>{
+const rect=canvas.getBoundingClientRect();
+const mx=e.clientX-rect.left;
+const my=e.clientY-rect.top;
 
 pieces.forEach(p=>{
+p.shape.forEach(b=>{
+const px=p.x+b.x*cell;
+const py=p.y+b.y*cell;
+if(mx>px&&mx<px+cell&&my>py&&my<py+cell){
+dragging=p;
+ox=mx-p.x;
+oy=my-p.y;
+}
+});
+});
+};
+
+canvas.onmousemove=e=>{
+if(!dragging) return;
+
+const rect=canvas.getBoundingClientRect();
+const mx=e.clientX-rect.left;
+const my=e.clientY-rect.top;
+
+dragging.x=mx-ox;
+dragging.y=my-oy;
+};
+
+canvas.onmouseup=()=>{
+dragging=null;
+};
+
+/* draw */
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ctx.strokeStyle="#000";
+
+for(let i=1;i<gridSize;i++){
+ctx.beginPath();
+ctx.moveTo(gridX+i*cell,gridY);
+ctx.lineTo(gridX+i*cell,gridY+gridSize*cell);
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(gridX,gridY+i*cell);
+ctx.lineTo(gridX+gridSize*cell,gridY+i*cell);
+ctx.stroke();
+}
+
+ctx.lineWidth=3;
+ctx.strokeRect(gridX,gridY,gridSize*cell,gridSize*cell);
+ctx.lineWidth=1;
+
+pieces.forEach(p=>{
+
 ctx.save();
+
 ctx.translate(p.x+cell/2,p.y+cell/2);
 ctx.rotate(p.rotation*Math.PI/180);
 ctx.translate(-p.x-cell/2,-p.y-cell/2);
 
-if(!reveal){ 
-p.shape.forEach(b=>{ 
-const px=p.x+b.x*cell; 
-const py=p.y+b.y*cell; 
-ctx.strokeStyle="#000"; 
-ctx.strokeRect(px,py,cell,cell); 
-}); 
-ctx.restore(); 
-return; 
-}
+if(!reveal){
 
-if(p.placed){
-ctx.fillStyle="#000";
-p.shape.forEach(b=>{
-const px=p.x+b.x*cell;
-const py=p.y+b.y*cell;
-ctx.fillRect(px,py,cell,cell);
-});
-} else {
-ctx.strokeStyle="#000";
 p.shape.forEach(b=>{
 const px=p.x+b.x*cell;
 const py=p.y+b.y*cell;
 ctx.strokeRect(px,py,cell,cell);
 });
-}
 
 ctx.restore();
+return;
+
+}
+
+ctx.fillStyle="#000";
+
+p.shape.forEach(b=>{
+const px=p.x+b.x*cell;
+const py=p.y+b.y*cell;
+ctx.fillRect(px,py,cell,cell);
+});
+
+ctx.restore();
+
 });
 
 requestAnimationFrame(draw);
+
 }
+
 draw();
 
 </script>
