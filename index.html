@@ -476,7 +476,59 @@ ctx.strokeRect(px,py,cell,cell);
 requestAnimationFrame(draw);
 
 }
+function getMousePos(e){
+const rect=canvas.getBoundingClientRect();
+return{
+x:(e.clientX-rect.left)*(canvas.width/rect.width),
+y:(e.clientY-rect.top)*(canvas.height/rect.height)
+};
+}
 
+canvas.addEventListener("mousedown",e=>{
+
+const m=getMousePos(e);
+
+for(let i=pieces.length-1;i>=0;i--){
+
+const p=pieces[i];
+
+for(const b of p.shape){
+
+const px=p.x+b.x*cell;
+const py=p.y+b.y*cell;
+
+if(
+m.x>px &&
+m.x<px+cell &&
+m.y>py &&
+m.y<py+cell
+){
+dragging=p;
+ox=m.x-p.x;
+oy=m.y-p.y;
+return;
+}
+
+}
+
+}
+
+});
+
+canvas.addEventListener("mousemove",e=>{
+
+if(!dragging)return;
+
+const m=getMousePos(e);
+
+dragging.x=m.x-ox;
+dragging.y=m.y-oy;
+
+});
+
+window.addEventListener("mouseup",()=>{
+dragging=null;
+});
 draw();
 
 </script>
