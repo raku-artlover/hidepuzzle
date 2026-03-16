@@ -330,17 +330,15 @@ cell=Math.floor(BOARD_PIXEL/gridSize);
 
 pieces=[];
 
+/* ★追加：先に盤位置を決める */
+gridX=canvas.width/2-gridSize*cell/2;
+gridY=canvas.height-gridSize*cell-20;
+
 const shapes=splitBoard(gridSize);
 
 let cx=20;
-let cy=40;
+let cy=20;
 let rowH=0;
-
-if(cy+h > gridY-20){
-cx=20;
-cy+=rowH+cell*0.5;
-rowH=0;
-}
 
 shapes.forEach(shape=>{
 
@@ -351,6 +349,13 @@ const maxY=Math.max(...shape.map(b=>b.y));
 
 const w=(maxX-minX+1)*cell;
 const h=(maxY-minY+1)*cell;
+
+/* ★追加：盤と重ならない */
+if(cy + h > gridY-20){
+cx=20;
+cy+=rowH+cell*0.5;
+rowH=0;
+}
 
 if(cx+w>canvas.width-20){
 cx=20;
@@ -370,10 +375,6 @@ rowH=Math.max(rowH,h);
 
 });
 
-gridX=canvas.width/2-gridSize*cell/2;
-gridY=50;
-
-gridY = canvas.height - gridSize*cell - 40;
 startTime=Date.now();
 
 clearInterval(timerInterval);
@@ -483,6 +484,7 @@ ctx.strokeRect(px,py,cell,cell);
 requestAnimationFrame(draw);
 
 }
+
 function getMousePos(e){
 const rect=canvas.getBoundingClientRect();
 return{
@@ -533,6 +535,7 @@ dragging.y=m.y-oy;
 
 });
 
+/* ★変更：吸着処理 */
 window.addEventListener("mouseup",()=>{
 
 if(!dragging)return;
@@ -540,12 +543,20 @@ if(!dragging)return;
 const gx=Math.round((dragging.x-gridX)/cell);
 const gy=Math.round((dragging.y-gridY)/cell);
 
+if(
+gx>=0 &&
+gy>=0 &&
+gx<gridSize &&
+gy<gridSize
+){
 dragging.x=gridX+gx*cell;
 dragging.y=gridY+gy*cell;
+}
 
 dragging=null;
 
 });
+
 draw();
 
 </script>
