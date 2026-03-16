@@ -405,6 +405,124 @@ function draw(){
 
   requestAnimationFrame(draw);
 }
+  function getMousePos(e){
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x:(e.clientX-rect.left)*(canvas.width/rect.width),
+    y:(e.clientY-rect.top)*(canvas.height/rect.height)
+  };
+}
+
+canvas.addEventListener("mousedown",e=>{
+  const m=getMousePos(e);
+
+  for(let i=pieces.length-1;i>=0;i--){
+    const p=pieces[i];
+
+    for(const b of p.shape){
+      const px=p.x+b.x*cell;
+      const py=p.y+b.y*cell;
+
+      if(
+        m.x>px && m.x<px+cell &&
+        m.y>py && m.y<py+cell
+      ){
+        dragging=p;
+        ox=m.x-p.x;
+        oy=m.y-p.y;
+        return;
+      }
+    }
+  }
+});
+
+canvas.addEventListener("mousemove",e=>{
+  if(!dragging) return;
+
+  const m=getMousePos(e);
+  dragging.x=m.x-ox;
+  dragging.y=m.y-oy;
+});
+
+window.addEventListener("mouseup",()=>{
+  if(!dragging) return;
+
+  const snapRange=cell*0.6;
+
+  dragging.shape.forEach(b=>{
+    const px=dragging.x+b.x*cell;
+    const py=dragging.y+b.y*cell;
+
+    const gx=Math.round((px-gridX)/cell);
+    const gy=Math.round((py-gridY)/cell);
+
+    const targetX=gridX+gx*cell-b.x*cell;
+    const targetY=gridY+gy*cell-b.y*cell;
+
+    if(
+      gx>=0 && gx<gridSize &&
+      gy>=0 && gy<gridSize &&
+      Math.abs(px-(gridX+gx*cell))<snapRange &&
+      Math.abs(py-(gridY+gy*cell))<snapRange
+    ){
+      dragging.x=targetX;
+      dragging.y=targetY;
+      dragging.placed=true;
+    }
+  });
+
+  dragging=null;
+
+  checkClear();
+});
+
+function checkClear(){
+
+  const board=Array.from({length:gridSize},()=>Array(gridSize).fill(false));
+
+  pieces.forEach(p=>{
+    if(!p.placed) return;
+
+    p.shape.forEach(b=>{
+      const gx=Math.round((p.x+b.x*cell-gridX)/cell);
+      const gy=Math.round((p.y+b.y*cell-gridY)/cell);
+
+      if(
+        gx>=0 && gx<gridSize &&
+        gy>=0 && gy<gridSize
+      ){
+        board[gy][gx]=true;
+      }
+    });
+  });
+
+  for(let y=0;y<gridSize;y++){
+    for(let x=0;x<gridSize;x++){
+      if(!board[y][x]) return;
+    }
+  }
+
+  cleared=true;
+  clearInterval(timerInterval);
+
+  const key=`levelL1-${level}`;
+  const best=bestScores[key];
+
+  if(!best || elapsedTime<best){
+    bestScores[key]=elapsedTime;
+    localStorage.setItem("bestScores",JSON.stringify(bestScores));
+  }
+
+  if(level>=reachedLevel.L1){
+    reachedLevel.L1=level+1;
+    localStorage.setItem("reachedLevel",JSON.stringify(reachedLevel));
+  }
+
+  clearText.textContent="CLEAR!";
+  scoreText.textContent=`TIME : ${elapsedTime.toFixed(1)}s`;
+
+  transitionScreen(gameUI,clearUI);
+}
 draw();
 </script>
 </body>
