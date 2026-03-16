@@ -333,8 +333,14 @@ pieces=[];
 const shapes=splitBoard(gridSize);
 
 let cx=20;
-let cy=20;
+let cy=40;
 let rowH=0;
+
+if(cy+h > gridY-20){
+cx=20;
+cy+=rowH+cell*0.5;
+rowH=0;
+}
 
 shapes.forEach(shape=>{
 
@@ -367,6 +373,7 @@ rowH=Math.max(rowH,h);
 gridX=canvas.width/2-gridSize*cell/2;
 gridY=50;
 
+gridY = canvas.height - gridSize*cell - 40;
 startTime=Date.now();
 
 clearInterval(timerInterval);
@@ -527,7 +534,17 @@ dragging.y=m.y-oy;
 });
 
 window.addEventListener("mouseup",()=>{
+
+if(!dragging)return;
+
+const gx=Math.round((dragging.x-gridX)/cell);
+const gy=Math.round((dragging.y-gridY)/cell);
+
+dragging.x=gridX+gx*cell;
+dragging.y=gridY+gy*cell;
+
 dragging=null;
+
 });
 draw();
 
