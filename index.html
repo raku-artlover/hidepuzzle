@@ -81,7 +81,7 @@ background:#fff;
 width:650px;
 height:650px;
 margin-top:10px;
-border:1px solid #000;
+border:2px solid #000;
 }
 
 #levelButtons{
@@ -153,8 +153,6 @@ SPACE を押すと<br>
 </div>
 
 <script>
-
-/* ここから元コード */
 
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
@@ -345,8 +343,6 @@ elapsedTime=(Date.now()-startTime)/1000;
 timerUI.textContent=`TIME: ${elapsedTime.toFixed(1)}s`;
 }
 
-/* reveal */
-
 window.addEventListener("keydown",e=>{
 if(e.code==="Space"&&!spacePressed){
 spacePressed=true;
@@ -363,8 +359,6 @@ spacePressed=false;
 reveal=false;
 }
 });
-
-/* ドラッグ */
 
 canvas.onmousedown=e=>{
 const rect=canvas.getBoundingClientRect();
@@ -396,10 +390,40 @@ dragging.y=my-oy;
 };
 
 canvas.onmouseup=()=>{
-dragging=null;
-};
 
-/* draw */
+if(dragging){
+
+const snapRange = cell*0.6;
+
+dragging.shape.forEach(b=>{
+
+const px = dragging.x + b.x*cell;
+const py = dragging.y + b.y*cell;
+
+const gx = Math.round((px-gridX)/cell);
+const gy = Math.round((py-gridY)/cell);
+
+const targetX = gridX + gx*cell - b.x*cell;
+const targetY = gridY + gy*cell - b.y*cell;
+
+if(
+gx>=0 && gx<gridSize &&
+gy>=0 && gy<gridSize &&
+Math.abs(px-(gridX+gx*cell))<snapRange &&
+Math.abs(py-(gridY+gy*cell))<snapRange
+){
+dragging.x = targetX;
+dragging.y = targetY;
+dragging.placed = true;
+}
+
+});
+
+}
+
+dragging=null;
+
+};
 
 function draw(){
 
