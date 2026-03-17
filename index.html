@@ -531,7 +531,6 @@ y:(e.clientY-rect.top)*(canvas.height/rect.height)
 }
 
 canvas.addEventListener("mousedown",e=>{
-canvas.addEventListener("mousedown",e=>{
 
 const m=getMousePos(e);
 
@@ -551,7 +550,7 @@ m.y>py &&
 m.y<py+cell
 ){
 
-/* 盤に置いてあるピースなら元の位置へ */
+/* 盤に置いてあるピースなら元の位置へ戻す */
 if(p.placed){
 p.x=p.startX;
 p.y=p.startY;
@@ -559,6 +558,7 @@ p.placed=false;
 return;
 }
 
+/* 通常ドラッグ */
 dragging=p;
 
 dragging.startX=p.x;
@@ -566,13 +566,14 @@ dragging.startY=p.y;
 
 ox=m.x-p.x;
 oy=m.y-p.y;
+
 return;
-
 }
 
 }
 
 }
+
 
 });
 const m=getMousePos(e);
