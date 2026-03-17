@@ -184,7 +184,6 @@ cursor:not-allowed;
 
 <div id="spaceLife"></div>
 
-<button id="revealBtn" class="btn">REVEAL</button>
 
 </div>
 
@@ -208,8 +207,37 @@ const scoreText=document.getElementById("scoreText");
 
 const timerUI=document.getElementById("timer");
 const bestScoreUI=document.getElementById("bestScoreUI");
+document.getElementById("reset").onclick=()=>{
+clearInterval(timerInterval);
+startLevel();
+};
 
-const revealBtn=document.getElementById("revealBtn");
+window.addEventListener("keydown",e=>{
+
+if(e.code!=="Space")return;
+if(cleared)return;
+
+/* ライフ減少 */
+spaceLife--;
+renderSpaceLife();
+
+/* 0ならゲームオーバー */
+if(spaceLife<=0){
+gameUI.style.display="none";
+gameOver.style.display="flex";
+return;
+}
+
+/* 表示フラグON */
+reveal=true;
+
+/* 1秒だけ表示 */
+setTimeout(()=>{
+reveal=false;
+},1000);
+
+});
+
 const spaceLifeDiv=document.getElementById("spaceLife");
 
 let LEVELS=[4,5,6,7];
@@ -634,6 +662,22 @@ dragging=null;
 
 });
 
+/* ★答え表示 */
+if(reveal){
+
+ctx.globalAlpha=0.3;
+
+pieces.forEach(p=>{
+p.shape.forEach(b=>{
+const px=gridX+b.x*cell;
+const py=gridY+b.y*cell;
+ctx.fillRect(px,py,cell,cell);
+});
+});
+
+ctx.globalAlpha=1;
+
+}
 draw();
 
 </script>
