@@ -513,6 +513,10 @@ m.y>py &&
 m.y<py+cell
 ){
 dragging=p;
+
+dragging.startX=p.x;
+dragging.startY=p.y;
+
 ox=m.x-p.x;
 oy=m.y-p.y;
 return;
@@ -564,13 +568,16 @@ break;
 }
 
 /* 全部入る時だけ吸着 */
+
 if(inside){
 dragging.x=gridX+gx*cell;
 dragging.y=gridY+gy*cell;
+}else{
+dragging.x=dragging.startX;
+dragging.y=dragging.startY;
 }
 
 dragging=null;
-
 });
 
 draw();
