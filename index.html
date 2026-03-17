@@ -123,19 +123,38 @@ canvas{
 }
 </style>
 </head>
-
 <body>
+
+<!-- ===== ここまでHTML追加 ===== -->
+
+
 <div id="title" class="screen">
   <h1>HIDE PUZZLE</h1>
   <button id="start" class="btn">START</button>
   <button id="menu" class="btn">MENU</button>
 </div>
 
+<!-- ===== ここから追加（HTML） ===== -->
+<div id="nameScreen" class="screen" style="display:none;">
+  <h1>NAME</h1>
+  <input id="nameInput" maxlength="5" style="font-size:20px; padding:5px;">
+  <button id="nameStart" class="btn">START</button>
+</div>
+
+<div id="rankingScreen" class="screen" style="display:none;">
+  <h1>RANKING</h1>
+  <div id="rankingList"></div>
+  <button id="rankingBack" class="btn">BACK</button>
+</div>
+
 <div id="menuScreen" class="screen" style="display:none;">
   <h1>SELECT LEVEL</h1>
   <div id="levelButtons"></div>
+  <button id="rankingBtn" class="btn">RANKING</button>
   <button id="menuBack" class="btn">BACK</button>
 </div>
+
+
 
 <div id="clear" class="screen" style="display:none">
   <h1 id="clearText"></h1>
@@ -165,6 +184,8 @@ canvas{
     <div id="spaceLife"></div>
   </div>
 </div>
+
+
 
 <script>
 const canvas=document.getElementById("c");
@@ -229,16 +250,13 @@ function updateTimer(){
 }
 function updateBestScoreUI(){
   const key = `level-${level}`;
-  const best = bestScores[key] || 0;
+  const best = bestScores[key];
+bestScoreUI.textContent = best ? `BEST: ${best.toFixed(1)}s` : "BEST: --";
   bestScoreUI.textContent = `BEST: ${best.toFixed(1)}s`;
 }
 
 // ===== ホームボタン =====
-document.getElementById("start").onclick=()=>{
-  title.style.display="none";
-  gameUI.style.display="flex";
-  startLevel();
-};
+
 document.getElementById("menu").onclick=()=>{
   title.style.display="none";
   menuScreen.style.display="flex";
@@ -532,6 +550,7 @@ function getMousePos(e){
   };
 }
 
+
 canvas.addEventListener("mousedown",e=>{
   const m=getMousePos(e);
   for(let i=pieces.length-1;i>=0;i--){
@@ -632,6 +651,96 @@ window.addEventListener("keydown",e=>{
 window.addEventListener("keyup",e=>{
   if(e.code==="Space"){ spacePressed=false; }
 });
+
+
+ // ===== ここから追加（JS） =====
+
+// 名前・ランキング用
+const nameScreen = document.getElementById("nameScreen");
+const nameInput = document.getElementById("nameInput");
+const rankingScreen = document.getElementById("rankingScreen");
+const rankingList = document.getElementById("rankingList");
+
+let playerName = localStorage.getItem("playerName") || "";
+let rankings = JSON.parse(localStorage.getItem("rankings") || "{}");
+
+// STARTを上書き（元は消さなくてOK）
+document.getElementById("start").addEventListener("click", ()=>{
+  title.style.display="none";
+  nameScreen.style.display="flex";
+  nameInput.value = playerName;
+});
+
+// 名前確定
+document.getElementById("nameStart").onclick=()=>{
+  if(nameInput.value.trim()==="") return;
+
+  playerName = nameInput.value.trim();
+  localStorage.setItem("playerName", playerName);
+
+  nameScreen.style.display="none";
+  gameUI.style.display="flex";
+  startLevel();
+};
+
+// ランキング保存（既存関数にフック）
+const originalCheckClear = checkClear;
+checkClear = function(){
+  originalCheckClear();
+
+  if(!cleared) return;
+
+  const time = elapsedTime;
+  const rKey = `level-${level}`;
+
+  if(!rankings[rKey]) rankings[rKey] = [];
+
+  rankings[rKey].push({
+    name: playerName || "NONAME",
+    time: time
+  });
+
+  rankings[rKey].sort((a,b)=>a.time-b.time);
+  rankings[rKey] = rankings[rKey].slice(0,5);
+
+  localStorage.setItem("rankings", JSON.stringify(rankings));
+};
+
+// ランキング表示
+function showRanking(){
+  rankingList.innerHTML = "";
+
+  LEVELS.forEach((size, i)=>{
+    const key = `level-${i}`;
+    const data = rankings[key] || [];
+
+    const div = document.createElement("div");
+    div.innerHTML = `<h3>${size}×${size}</h3>`;
+
+    data.forEach((r, index)=>{
+      const p = document.createElement("p");
+      p.textContent = `${index+1}. ${r.name} - ${r.time.toFixed(1)}s`;
+      div.appendChild(p);
+    });
+
+    rankingList.appendChild(div);
+  });
+}
+
+// ボタン動作
+document.getElementById("rankingBtn").onclick=()=>{
+  menuScreen.style.display="none";
+  rankingScreen.style.display="flex";
+  showRanking();
+};
+
+document.getElementById("rankingBack").onclick=()=>{
+  rankingScreen.style.display="none";
+  menuScreen.style.display="flex";
+};
+
+// ===== ここまで追加 =====
 </script>
+
 </body>
 </html>
