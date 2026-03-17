@@ -6,188 +6,167 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
 body{
-margin:0;
-background:#fff;
-font-family: Helvetica, Arial, sans-serif;
-touch-action:none;
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
+  margin:0;
+  background:#fff;
+  font-family: Helvetica, Arial, sans-serif;
+  touch-action:none;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
 .screen{
-position:absolute;
-inset:0;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-background:#fff;
-z-index:5;
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:#fff;
+  z-index:5;
 }
 
 h1{
-font-size:48px;
-letter-spacing:0.05em;
-margin-bottom:20px;
-text-align:center;
+  font-size:48px;
+  letter-spacing:0.05em;
+  margin-bottom:20px;
+  text-align:center;
 }
 
 .btn{
-padding:12px 40px;
-border:2px solid #000;
-font-size:18px;
-background:none;
-cursor:pointer;
-margin:5px;
-user-select:none;
+  padding:12px 40px;
+  border:2px solid #000;
+  font-size:18px;
+  background:none;
+  cursor:pointer;
+  margin:5px;
+  user-select:none;
 }
-
-/* ===== GAME LAYOUT ===== */
 
 #game{
-display:none;
-flex-direction:column;
-justify-content:space-between;
-align-items:center;
-position:relative;
-width:100%;
-height:100vh;
-max-width:900px;
-padding:20px;
-box-sizing:border-box;
+  display:none;
+  flex-direction:column;
+  justify-content:space-between;
+  align-items:center;
+  position:relative;
+  width:100%;
+  height:100vh;
+  max-width:900px;
+  padding:20px;
+  box-sizing:border-box;
 }
 
-/* 上UI */
-
 #topUI{
-width:100%;
-display:flex;
-justify-content:space-between;
-align-items:center;
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
 #timer{
-font-size:20px;
-font-weight:bold;
+  font-size:20px;
+  font-weight:bold;
 }
 
 #bestScoreUI{
-font-size:16px;
+  font-size:16px;
 }
 
-/* canvasエリア */
-
 #canvasArea{
-flex:1;
-display:flex;
-justify-content:center;
-align-items:center;
-width:100%;
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:100%;
 }
 
 canvas{
-background:#fff;
-width:100%;
-max-width:600px;
-height:auto;
-touch-action:none;
+  background:#fff;
+  width:100%;
+  max-width:600px;
+  height:auto;
+  touch-action:none;
 }
-
-/* 下UI */
 
 #bottomUI{
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
 }
 
-/* ライフ */
-
 #spaceLife{
-display:flex;
-gap:10px;
+  display:flex;
+  gap:10px;
 }
 
 .lifeDot{
-width:20px;
-height:20px;
-border-radius:50%;
-background:#000;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:#000;
 }
 
 #levelButtons{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-max-width:300px;
-margin:10px 0;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  max-width:300px;
+  margin:10px 0;
 }
 
 #levelButtons button:disabled{
-opacity:0.3;
-cursor:not-allowed;
+  opacity:0.3;
+  cursor:not-allowed;
 }
-
 </style>
 </head>
 
 <body>
-
 <div id="title" class="screen">
-<h1>HIDE PUZZLE</h1>
-<button id="start" class="btn">START</button>
-<button id="menu" class="btn">MENU</button>
+  <h1>HIDE PUZZLE</h1>
+  <button id="start" class="btn">START</button>
+  <button id="menu" class="btn">MENU</button>
 </div>
 
 <div id="menuScreen" class="screen" style="display:none;">
-<h1>SELECT LEVEL</h1>
-<div id="levelButtons"></div>
-<button id="menuBack" class="btn">BACK</button>
+  <h1>SELECT LEVEL</h1>
+  <div id="levelButtons"></div>
+  <button id="menuBack" class="btn">BACK</button>
 </div>
 
 <div id="clear" class="screen" style="display:none">
-<h1 id="clearText"></h1>
-<p id="scoreText" style="font-size:20px;"></p>
-<button id="next" class="btn">NEXT STAGE</button>
-<button id="retry" class="btn">RETRY</button>
-<button id="clearHome" class="btn">HOME</button>
+  <h1 id="clearText"></h1>
+  <p id="scoreText" style="font-size:20px;"></p>
+  <button id="next" class="btn">NEXT STAGE</button>
+  <button id="retry" class="btn">RETRY</button>
+  <button id="clearHome" class="btn">HOME</button>
 </div>
 
 <div id="gameOver" class="screen" style="display:none">
-<h1>GAME OVER</h1>
-<button id="goHome" class="btn">HOME</button>
-<button id="goRetry" class="btn">RETRY</button>
+  <h1>GAME OVER</h1>
+  <button id="goHome" class="btn">HOME</button>
+  <button id="goRetry" class="btn">RETRY</button>
 </div>
 
 <div id="game">
-
-<div id="topUI">
-<button id="reset" class="btn">RESET</button>
-
-<div id="timer">TIME: 0.0s</div>
-
-<div id="bestScoreUI">BEST: 0.0s</div>
-
-<button id="home" class="btn">HOME</button>
-</div>
-
-<div id="canvasArea">
-<canvas id="c" width="450" height="450"></canvas>
-</div>
-
-<div id="bottomUI">
-<div id="spaceLife"></div>
-</div>
-
+  <div id="topUI">
+    <button id="reset" class="btn">RESET</button>
+    <div id="timer">TIME: 0.0s</div>
+    <div id="bestScoreUI">BEST: 0.0s</div>
+    <button id="home" class="btn">HOME</button>
+  </div>
+  <div id="canvasArea">
+    <canvas id="c" width="450" height="450"></canvas>
+  </div>
+  <div id="bottomUI">
+    <div id="spaceLife"></div>
+  </div>
 </div>
 
 <script>
-
 const canvas=document.getElementById("c");
 const ctx=canvas.getContext("2d");
 
@@ -205,8 +184,8 @@ const scoreText=document.getElementById("scoreText");
 const timerUI=document.getElementById("timer");
 const bestScoreUI=document.getElementById("bestScoreUI");
 document.getElementById("reset").onclick=()=>{
-clearInterval(timerInterval);
-startLevel();
+  clearInterval(timerInterval);
+  startLevel();
 };
 
 const spaceLifeDiv=document.getElementById("spaceLife");
@@ -239,326 +218,339 @@ let reachedLevel=JSON.parse(localStorage.getItem("reachedLevel")||'{"L1":0}');
 
 let spaceLife=4;
 
-// ===== タイマー関連 =====
+// ===== タイマー =====
 function updateTimer(){
-    if(cleared) return;
-    elapsedTime = (Date.now() - startTime)/1000;
-    timerUI.textContent = `TIME: ${elapsedTime.toFixed(1)}s`;
-    const key = `level-${level}`;
-    const best = bestScores[key] || 0;
-    bestScoreUI.textContent = `BEST: ${best.toFixed(1)}s`;
+  if(cleared) return;
+  elapsedTime = (Date.now() - startTime)/1000;
+  timerUI.textContent = `TIME: ${elapsedTime.toFixed(1)}s`;
+  const key = `level-${level}`;
+  const best = bestScores[key] || 0;
+  bestScoreUI.textContent = `BEST: ${best.toFixed(1)}s`;
 }
-
 function updateBestScoreUI(){
-    const key = `level-${level}`;
-    const best = bestScores[key] || 0;
-    bestScoreUI.textContent = `BEST: ${best.toFixed(1)}s`;
+  const key = `level-${level}`;
+  const best = bestScores[key] || 0;
+  bestScoreUI.textContent = `BEST: ${best.toFixed(1)}s`;
 }
 
-// ===== ホームボタン等 =====
+// ===== ホームボタン =====
 document.getElementById("start").onclick=()=>{
-title.style.display="none";
-gameUI.style.display="flex";
-startLevel();
+  title.style.display="none";
+  gameUI.style.display="flex";
+  startLevel();
 };
-
 document.getElementById("menu").onclick=()=>{
-title.style.display="none";
-menuScreen.style.display="flex";
-renderLevelButtons();
+  title.style.display="none";
+  menuScreen.style.display="flex";
+  renderLevelButtons();
 };
-
 menuBack.onclick=()=>{
-menuScreen.style.display="none";
-title.style.display="flex";
+  menuScreen.style.display="none";
+  title.style.display="flex";
 };
-
 document.getElementById("next").onclick=()=>{
-levels.push(levels[levels.length-1]+1);
-level++;
-clearUI.style.display="none";
-gameUI.style.display="flex";
-startLevel();
+  levels.push(levels[levels.length-1]+1);
+  level++;
+  clearUI.style.display="none";
+  gameUI.style.display="flex";
+  startLevel();
 };
-
 document.getElementById("retry").onclick=()=>{
-clearUI.style.display="none";
-gameUI.style.display="flex";
-startLevel();
+  clearUI.style.display="none";
+  gameUI.style.display="flex";
+  startLevel();
 };
-
 document.getElementById("home").onclick=()=>{
-gameUI.style.display="none";
-title.style.display="flex";
+  gameUI.style.display="none";
+  title.style.display="flex";
 };
-
 document.getElementById("clearHome").onclick=()=>{
-clearUI.style.display="none";
-title.style.display="flex";
+  clearUI.style.display="none";
+  title.style.display="flex";
 };
-
 document.getElementById("goHome").onclick=()=>{
-gameOver.style.display="none";
-title.style.display="flex";
+  gameOver.style.display="none";
+  title.style.display="flex";
 };
-
 document.getElementById("goRetry").onclick=()=>{
-gameOver.style.display="none";
-gameUI.style.display="flex";
-startLevel();
+  gameOver.style.display="none";
+  gameUI.style.display="flex";
+  startLevel();
 };
 
 // ===== ライフ表示 =====
 function renderSpaceLife(){
-spaceLifeDiv.innerHTML="";
-for(let i=0;i<spaceLife;i++){
-const dot=document.createElement("div");
-dot.className="lifeDot";
-spaceLifeDiv.appendChild(dot);
-}
+  spaceLifeDiv.innerHTML="";
+  for(let i=0;i<spaceLife;i++){
+    const dot=document.createElement("div");
+    dot.className="lifeDot";
+    spaceLifeDiv.appendChild(dot);
+  }
 }
 
 // ===== レベルボタン =====
 function renderLevelButtons(){
-levelButtonsDiv.innerHTML="";
-LEVELS.forEach((size,i)=>{
-const btn=document.createElement("button");
-btn.className="btn";
-btn.textContent=`${size}×${size}`;
-if(i>reachedLevel.L1)btn.disabled=true;
-btn.onclick=()=>{
-level=i;
-menuScreen.style.display="none";
-gameUI.style.display="flex";
-startLevel();
-};
-levelButtonsDiv.appendChild(btn);
-});
+  levelButtonsDiv.innerHTML="";
+  LEVELS.forEach((size,i)=>{
+    const btn=document.createElement("button");
+    btn.className="btn";
+    btn.textContent=`${size}×${size}`;
+    if(i>reachedLevel.L1)btn.disabled=true;
+    btn.onclick=()=>{
+      level=i;
+      menuScreen.style.display="none";
+      gameUI.style.display="flex";
+      startLevel();
+    };
+    levelButtonsDiv.appendChild(btn);
+  });
 }
 
 // ===== レベル開始 =====
 function startLevel(){
+  cleared=false;
+  reveal=false;
+  spaceLife=4;
+  renderSpaceLife();
+  gridSize=levels[level];
+  cell=Math.floor(BOARD_PIXEL/gridSize);
+  pieces=[];
 
-cleared=false;
-reveal=false;
+  gridX=canvas.width/2-gridSize*cell/2;
+  gridY=canvas.height-gridSize*cell-80;
 
-spaceLife=4;
-renderSpaceLife();
+  const shapes=splitBoard(gridSize);
 
-gridSize=levels[level];
-cell=Math.floor(BOARD_PIXEL/gridSize);
+  const margin=20;
+  let cx=margin;
+  let cy=margin;
+  let rowH=0;
 
-pieces=[];
+  shapes.forEach(shape=>{
+    const minX=Math.min(...shape.map(b=>b.x));
+    const minY=Math.min(...shape.map(b=>b.y));
+    const maxX=Math.max(...shape.map(b=>b.x));
+    const maxY=Math.max(...shape.map(b=>b.y));
+    const w=(maxX-minX+1)*cell;
+    const h=(maxY-minY+1)*cell;
 
-/* 盤位置 */
-gridX=canvas.width/2-gridSize*cell/2;
-gridY=canvas.height-gridSize*cell-80;
+    if(cx + w > canvas.width - margin){ cx = margin; cy += rowH + cell*0.5; rowH = 0; }
+    if(cy + h > gridY - margin){ cy = margin; cx = margin; rowH = 0; }
 
-const shapes=splitBoard(gridSize);
+    pieces.push({shape, x:cx-minX*cell, y:cy-minY*cell, placed:false});
+    cx += w + cell*0.5;
+    rowH = Math.max(rowH, h);
+  });
 
-const margin=20;
-let cx=margin;
-let cy=margin;
-let rowH=0;
-
-shapes.forEach(shape=>{
-
-const minX=Math.min(...shape.map(b=>b.x));
-const minY=Math.min(...shape.map(b=>b.y));
-const maxX=Math.max(...shape.map(b=>b.x));
-const maxY=Math.max(...shape.map(b=>b.y));
-
-const w=(maxX-minX+1)*cell;
-const h=(maxY-minY+1)*cell;
-
-if(cx + w > canvas.width - margin){ cx = margin; cy += rowH + cell*0.5; rowH = 0; }
-if(cy + h > gridY - margin){ cy = margin; cx = margin; rowH = 0; }
-
-pieces.push({shape, x:cx-minX*cell, y:cy-minY*cell, placed:false});
-
-cx += w + cell*0.5;
-rowH = Math.max(rowH, h);
-});
-
-startTime=Date.now();
-clearInterval(timerInterval);
-timerInterval=setInterval(updateTimer,50);
-updateBestScoreUI();
-
+  startTime=Date.now();
+  clearInterval(timerInterval);
+  timerInterval=setInterval(updateTimer,50);
+  updateBestScoreUI();
 }
 
-// ===== 分割盤面作成 =====
+// ===== 分割盤面 =====
 function splitBoard(size){
-const cells=[];
-for(let y=0;y<size;y++)
-for(let x=0;x<size;x++)
-cells.push({x,y,used:false});
+  const cells=[];
+  for(let y=0;y<size;y++)
+    for(let x=0;x<size;x++)
+      cells.push({x,y,used:false});
 
-const result=[];
-while(cells.some(c=>!c.used)){
-const start=cells.find(c=>!c.used);
-start.used=true;
-const piece=[start];
-const target=Math.floor(Math.random()*3)+2;
-while(piece.length<target){
-const opts=cells.filter(n=>!n.used && piece.some(p=>Math.abs(n.x-p.x)+Math.abs(n.y-p.y)===1));
-if(!opts.length) break;
-const n=opts[Math.floor(Math.random()*opts.length)];
-n.used=true;
-piece.push(n);
-}
-result.push(piece);
-}
-return result;
+  const result=[];
+  while(cells.some(c=>!c.used)){
+    const start=cells.find(c=>!c.used);
+    start.used=true;
+    const piece=[start];
+    const target=Math.floor(Math.random()*3)+2;
+    while(piece.length<target){
+      const opts=cells.filter(n=>!n.used && piece.some(p=>Math.abs(n.x-p.x)+Math.abs(n.y-p.y)===1));
+      if(!opts.length) break;
+      const n=opts[Math.floor(Math.random()*opts.length)];
+      n.used=true;
+      piece.push(n);
+    }
+    result.push(piece);
+  }
+  return result;
 }
 
 // ===== クリア判定 =====
 function checkClear(){
-if(pieces.every(p=>p.placed)){
-cleared=true;
-clearInterval(timerInterval);
-const time=elapsedTime;
-const key=`level-${level}`;
-if(!bestScores[key] || time<bestScores[key]){
-bestScores[key]=time;
-localStorage.setItem("bestScores",JSON.stringify(bestScores));
-}
-clearText.textContent="CLEAR!";
-scoreText.textContent=`TIME: ${time.toFixed(1)}s   BEST: ${(bestScores[key]||time).toFixed(1)}s`;
-gameUI.style.display="none";
-clearUI.style.display="flex";
+  if(pieces.every(p=>p.placed)){
+    cleared=true;
+    clearInterval(timerInterval);
+    const time=elapsedTime;
+    const key=`level-${level}`;
+    if(!bestScores[key] || time<bestScores[key]){
+      bestScores[key]=time;
+      localStorage.setItem("bestScores",JSON.stringify(bestScores));
+    }
+    clearText.textContent="CLEAR!";
+    scoreText.textContent=`TIME: ${time.toFixed(1)}s   BEST: ${(bestScores[key]||time).toFixed(1)}s`;
+    gameUI.style.display="none";
+    clearUI.style.display="flex";
 
-if(!reachedLevel.L1 || level>=reachedLevel.L1){
-reachedLevel.L1=level+1;
-localStorage.setItem("reachedLevel",JSON.stringify(reachedLevel));
-}
-}
+    if(!reachedLevel.L1 || level>=reachedLevel.L1){
+      reachedLevel.L1=level+1;
+      localStorage.setItem("reachedLevel",JSON.stringify(reachedLevel));
+    }
+  }
 }
 
 // ===== 描画 =====
 function draw(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-ctx.strokeStyle="#000";
-for(let i=1;i<gridSize;i++){
-ctx.beginPath();
-ctx.moveTo(gridX+i*cell,gridY);
-ctx.lineTo(gridX+i*cell,gridY+gridSize*cell);
-ctx.stroke();
-ctx.beginPath();
-ctx.moveTo(gridX,gridY+i*cell);
-ctx.lineTo(gridX+gridSize*cell,gridY+i*cell);
-ctx.stroke();
-}
-ctx.lineWidth=3;
-ctx.strokeRect(gridX,gridY,gridSize*cell,gridSize*cell);
-ctx.lineWidth=1;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle="#000";
+  for(let i=1;i<gridSize;i++){
+    ctx.beginPath();
+    ctx.moveTo(gridX+i*cell,gridY);
+    ctx.lineTo(gridX+i*cell,gridY+gridSize*cell);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(gridX,gridY+i*cell);
+    ctx.lineTo(gridX+gridSize*cell,gridY+i*cell);
+    ctx.stroke();
+  }
+  ctx.lineWidth=3;
+  ctx.strokeRect(gridX,gridY,gridSize*cell,gridSize*cell);
+  ctx.lineWidth=1;
 
-pieces.forEach(p=>{
-p.shape.forEach(b=>{
-const px=p.x+b.x*cell;
-const py=p.y+b.y*cell;
-ctx.strokeRect(px,py,cell,cell);
-});
-});
+  pieces.forEach(p=>{
+    p.shape.forEach(b=>{
+      const px=p.x+b.x*cell;
+      const py=p.y+b.y*cell;
+      ctx.strokeRect(px,py,cell,cell);
+    });
+  });
 
-if(reveal){
-ctx.globalAlpha=0.3;
-pieces.forEach(p=>{
-if(!p.placed) return;
-p.shape.forEach(b=>{
-const px=p.x+b.x*cell;
-const py=p.y+b.y*cell;
-ctx.fillRect(px,py,cell,cell);
-});
-});
-ctx.globalAlpha=1;
-}
+  if(reveal){
+    ctx.globalAlpha=0.3;
+    pieces.forEach(p=>{
+      if(!p.placed) return;
+      p.shape.forEach(b=>{
+        const px=p.x+b.x*cell;
+        const py=p.y+b.y*cell;
+        ctx.fillRect(px,py,cell,cell);
+      });
+    });
+    ctx.globalAlpha=1;
+  }
 
-requestAnimationFrame(draw);
+  requestAnimationFrame(draw);
 }
 
 draw();
 
 // ===== マウス操作 =====
 function getMousePos(e){
-const rect=canvas.getBoundingClientRect();
-return{
-x:(e.clientX-rect.left)*(canvas.width/rect.width),
-y:(e.clientY-rect.top)*(canvas.height/rect.height)
-};
+  const rect=canvas.getBoundingClientRect();
+  return{
+    x:(e.clientX-rect.left)*(canvas.width/rect.width),
+    y:(e.clientY-rect.top)*(canvas.height/rect.height)
+  };
 }
 
 canvas.addEventListener("mousedown",e=>{
-const m=getMousePos(e);
-for(let i=pieces.length-1;i>=0;i--){
-const p=pieces[i];
-for(const b of p.shape){
-const px=p.x+b.x*cell;
-const py=p.y+b.y*cell;
-if(m.x>px && m.x<px+cell && m.y>py && m.y<py+cell){
-if(p.placed){ p.x=p.startX; p.y=p.startY; p.placed=false; return; }
-dragging=p;
-dragging.startX=p.x;
-dragging.startY=p.y;
-ox=m.x-p.x;
-oy=m.y-p.y;
-return;
-}
-}
-}
+  const m=getMousePos(e);
+  for(let i=pieces.length-1;i>=0;i--){
+    const p=pieces[i];
+    for(const b of p.shape){
+      const px=p.x+b.x*cell;
+      const py=p.y+b.y*cell;
+      if(m.x>px && m.x<px+cell && m.y>py && m.y<py+cell){
+        if(p.placed){ p.x=p.startX; p.y=p.startY; p.placed=false; return; }
+        dragging=p;
+        dragging.startX=p.x;
+        dragging.startY=p.y;
+        ox=m.x-p.x;
+        oy=m.y-p.y;
+        return;
+      }
+    }
+  }
 });
 
 canvas.addEventListener("mousemove",e=>{
-if(!dragging) return;
-const m=getMousePos(e);
-dragging.x=m.x-ox;
-dragging.y=m.y-oy;
+  if(!dragging) return;
+  const m=getMousePos(e);
+  dragging.x=m.x-ox;
+  dragging.y=m.y-oy;
 });
 
+// ===== マウスアップで重なりチェック付き =====
 window.addEventListener("mouseup",()=>{
-if(!dragging) return;
-const gx=Math.round((dragging.x-gridX)/cell);
-const gy=Math.round((dragging.y-gridY)/cell);
-let inside=true;
-for(const b of dragging.shape){
-const x=gx+b.x;
-const y=gy+b.y;
-if(x<0 || y<0 || x>=gridSize || y>=gridSize){ inside=false; break; }
-}
-if(inside){
-dragging.x=gridX+gx*cell;
-dragging.y=gridY+gy*cell;
-dragging.placed=true;
-checkClear();
-}else{
-dragging.x=dragging.startX;
-dragging.y=dragging.startY;
-}
-dragging=null;
+  if(!dragging) return;
+
+  const gx=Math.round((dragging.x-gridX)/cell);
+  const gy=Math.round((dragging.y-gridY)/cell);
+
+  let inside=true;
+
+  // 盤内チェック
+  for(const b of dragging.shape){
+    const x=gx+b.x;
+    const y=gy+b.y;
+    if(x<0 || y<0 || x>=gridSize || y>=gridSize){
+      inside=false;
+      break;
+    }
+  }
+
+  // 他ピースとの重なりチェック
+  if(inside){
+    for(const other of pieces){
+      if(other===dragging || !other.placed) continue;
+      for(const b1 of dragging.shape){
+        const dx = gx+b1.x;
+        const dy = gy+b1.y;
+        for(const b2 of other.shape){
+          const ox = (other.x-gridX)/cell + b2.x;
+          const oy = (other.y-gridY)/cell + b2.y;
+          if(dx===ox && dy===oy){
+            inside=false;
+            break;
+          }
+        }
+        if(!inside) break;
+      }
+      if(!inside) break;
+    }
+  }
+
+  if(inside){
+    dragging.x = gridX + gx*cell;
+    dragging.y = gridY + gy*cell;
+    dragging.placed = true;
+    checkClear();
+  } else {
+    dragging.x = dragging.startX;
+    dragging.y = dragging.startY;
+    dragging.placed = false;
+  }
+
+  dragging=null;
 });
 
 // ===== スペースキーで答え確認 =====
 let spacePressed=false;
 window.addEventListener("keydown",e=>{
-if(e.code!=="Space") return;
-if(spacePressed) return;
-spacePressed=true;
-if(cleared) return;
-spaceLife--;
-renderSpaceLife();
-if(spaceLife<=0){
-gameUI.style.display="none";
-gameOver.style.display="flex";
-return;
-}
-reveal=true;
-setTimeout(()=>{ reveal=false; },1000);
+  if(e.code!=="Space") return;
+  if(spacePressed) return;
+  spacePressed=true;
+  if(cleared) return;
+  spaceLife--;
+  renderSpaceLife();
+  if(spaceLife<=0){
+    gameUI.style.display="none";
+    gameOver.style.display="flex";
+    return;
+  }
+  reveal=true;
+  setTimeout(()=>{ reveal=false; },1000);
 });
 
 window.addEventListener("keyup",e=>{
-if(e.code==="Space"){ spacePressed=false; }
+  if(e.code==="Space"){ spacePressed=false; }
 });
-
 </script>
 </body>
 </html>
