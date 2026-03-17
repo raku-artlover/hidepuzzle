@@ -306,7 +306,7 @@ function renderLevelButtons(){
   });
 }
 
-// ===== レベル開始 =====
+// ===== レベル開始 (重なりなし) =====
 function startLevel(){
   cleared=false;
   reveal=false;
@@ -321,10 +321,9 @@ function startLevel(){
 
   const shapes=splitBoard(gridSize);
 
-  const margin=20;
-  let cx=margin;
-  let cy=margin;
-  let rowH=0;
+  // 重なりなしで初期配置
+  const margin = 20;
+  const placedPieces = [];
 
   shapes.forEach(shape=>{
     const minX=Math.min(...shape.map(b=>b.x));
@@ -334,18 +333,38 @@ function startLevel(){
     const w=(maxX-minX+1)*cell;
     const h=(maxY-minY+1)*cell;
 
-    if(cx + w > canvas.width - margin){ cx = margin; cy += rowH + cell*0.5; rowH = 0; }
-    if(cy + h > gridY - margin){ cy = margin; cx = margin; rowH = 0; }
+    let cx, cy, attempts=0;
+    do{
+      cx = margin + Math.random()*(canvas.width - margin*2 - w);
+      cy = margin + Math.random()*(gridY - margin - h);
+      attempts++;
+    }while(placedPieces.some(p=>piecesOverlap(p,{shape, x:cx-minX*cell, y:cy-minY*cell})) && attempts<100);
 
-    pieces.push({shape, x:cx-minX*cell, y:cy-minY*cell, placed:false});
-    cx += w + cell*0.5;
-    rowH = Math.max(rowH, h);
+    const pieceObj = {shape, x:cx-minX*cell, y:cy-minY*cell, placed:false};
+    pieces.push(pieceObj);
+    placedPieces.push(pieceObj);
   });
 
   startTime=Date.now();
   clearInterval(timerInterval);
   timerInterval=setInterval(updateTimer,50);
   updateBestScoreUI();
+}
+
+// ===== ピース重なり判定 =====
+function piecesOverlap(p1, p2){
+  for(const b1 of p1.shape){
+    const x1 = p1.x + b1.x*cell;
+    const y1 = p1.y + b1.y*cell;
+    for(const b2 of p2.shape){
+      const x2 = p2.x + b2.x*cell;
+      const y2 = p2.y + b2.y*cell;
+      if(x1 < x2 + cell && x1 + cell > x2 && y1 < y2 + cell && y1 + cell > y2){
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 // ===== 分割盤面 =====
