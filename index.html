@@ -545,7 +545,22 @@ const py=p.y+b.y*cell;
 ctx.strokeRect(px,py,cell,cell);
 });
 });
+/* ★答え表示 */
+if(reveal){
 
+ctx.globalAlpha=0.3;
+
+pieces.forEach(p=>{
+p.shape.forEach(b=>{
+const px=gridX+b.x*cell;
+const py=gridY+b.y*cell;
+ctx.fillRect(px,py,cell,cell);
+});
+});
+
+ctx.globalAlpha=1;
+
+}
 requestAnimationFrame(draw);
 
 }
@@ -662,22 +677,7 @@ dragging=null;
 
 });
 
-/* ★答え表示 */
-if(reveal){
 
-ctx.globalAlpha=0.3;
-
-pieces.forEach(p=>{
-p.shape.forEach(b=>{
-const px=gridX+b.x*cell;
-const py=gridY+b.y*cell;
-ctx.fillRect(px,py,cell,cell);
-});
-});
-
-ctx.globalAlpha=1;
-
-}
 draw();
 
 </script>
