@@ -335,12 +335,8 @@ function startLevel(){
     const w=(maxX-minX+1)*cell;
     const h=(maxY-minY+1)*cell;
 
-    let cx, cy, attempts=0;
-    do{
-      cx = margin + Math.random()*(canvas.width - margin*2 - w);
-      cy = margin + Math.random()*(gridY - margin - h);
-      attempts++;
-    }
+   let cx, cy;
+let placedOK = false;
 
 while(!placedOK){
   cx = margin + Math.random()*(canvas.width - margin*2 - w);
@@ -626,3 +622,5 @@ window.addEventListener("keyup",e=>{
 </script>
 </body>
 </html>
+
+あってる？
