@@ -229,7 +229,7 @@ let oy=0;
 let cleared=false;
 let reveal=false;
 
-const BOARD_PIXEL=300;
+const BOARD_PIXEL=260;
 
 let startTime;
 let elapsedTime=0;
@@ -337,7 +337,7 @@ gridY=canvas.height-gridSize*cell-20;
 const shapes=splitBoard(gridSize);
 
 let cx=20;
-let cy=20;
+let cy=40;
 let rowH=0;
 
 shapes.forEach(shape=>{
@@ -351,7 +351,7 @@ const w=(maxX-minX+1)*cell;
 const h=(maxY-minY+1)*cell;
 
 /* ★追加：盤と重ならない */
-if(cy + h > gridY-20){
+if(cy + h > gridY-40){
 cx=20;
 cy+=rowH+cell*0.5;
 rowH=0;
