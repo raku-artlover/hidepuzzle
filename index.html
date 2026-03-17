@@ -181,10 +181,7 @@ cursor:not-allowed;
 </div>
 
 <div id="bottomUI">
-
 <div id="spaceLife"></div>
-
-
 </div>
 
 </div>
@@ -211,7 +208,6 @@ document.getElementById("reset").onclick=()=>{
 clearInterval(timerInterval);
 startLevel();
 };
-
 
 const spaceLifeDiv=document.getElementById("spaceLife");
 
@@ -243,6 +239,23 @@ let reachedLevel=JSON.parse(localStorage.getItem("reachedLevel")||'{"L1":0}');
 
 let spaceLife=4;
 
+// ===== タイマー関連 =====
+function updateTimer(){
+    if(cleared) return;
+    elapsedTime = (Date.now() - startTime)/1000;
+    timerUI.textContent = `TIME: ${elapsedTime.toFixed(1)}s`;
+    const key = `level-${level}`;
+    const best = bestScores[key] || 0;
+    bestScoreUI.textContent = `BEST: ${best.toFixed(1)}s`;
+}
+
+function updateBestScoreUI(){
+    const key = `level-${level}`;
+    const best = bestScores[key] || 0;
+    bestScoreUI.textContent = `BEST: ${best.toFixed(1)}s`;
+}
+
+// ===== ホームボタン等 =====
 document.getElementById("start").onclick=()=>{
 title.style.display="none";
 gameUI.style.display="flex";
@@ -261,16 +274,11 @@ title.style.display="flex";
 };
 
 document.getElementById("next").onclick=()=>{
-
 levels.push(levels[levels.length-1]+1);
-
 level++;
-
 clearUI.style.display="none";
 gameUI.style.display="flex";
-
 startLevel();
-
 };
 
 document.getElementById("retry").onclick=()=>{
@@ -300,6 +308,7 @@ gameUI.style.display="flex";
 startLevel();
 };
 
+// ===== ライフ表示 =====
 function renderSpaceLife(){
 spaceLifeDiv.innerHTML="";
 for(let i=0;i<spaceLife;i++){
@@ -309,6 +318,7 @@ spaceLifeDiv.appendChild(dot);
 }
 }
 
+// ===== レベルボタン =====
 function renderLevelButtons(){
 levelButtonsDiv.innerHTML="";
 LEVELS.forEach((size,i)=>{
@@ -326,6 +336,7 @@ levelButtonsDiv.appendChild(btn);
 });
 }
 
+// ===== レベル開始 =====
 function startLevel(){
 
 cleared=false;
@@ -339,7 +350,7 @@ cell=Math.floor(BOARD_PIXEL/gridSize);
 
 pieces=[];
 
-/* ★追加：先に盤位置を決める */
+/* 盤位置 */
 gridX=canvas.width/2-gridSize*cell/2;
 gridY=canvas.height-gridSize*cell-80;
 
@@ -360,158 +371,84 @@ const maxY=Math.max(...shape.map(b=>b.y));
 const w=(maxX-minX+1)*cell;
 const h=(maxY-minY+1)*cell;
 
-/* 横はみ出し防止 */
-if(cx + w > canvas.width - margin){
-cx = margin;
-cy += rowH + cell*0.5;
-rowH = 0;
-}
+if(cx + w > canvas.width - margin){ cx = margin; cy += rowH + cell*0.5; rowH = 0; }
+if(cy + h > gridY - margin){ cy = margin; cx = margin; rowH = 0; }
 
-/* 下はみ出し防止 */
-if(cy + h > gridY - margin){
-cy = margin;
-cx = margin;
-rowH = 0;
-}
-
-pieces.push({
-shape,
-x:cx-minX*cell,
-y:cy-minY*cell,
-placed:false
-});
+pieces.push({shape, x:cx-minX*cell, y:cy-minY*cell, placed:false});
 
 cx += w + cell*0.5;
 rowH = Math.max(rowH, h);
-
 });
 
-
-
-
 startTime=Date.now();
-
 clearInterval(timerInterval);
 timerInterval=setInterval(updateTimer,50);
-
 updateBestScoreUI();
 
-function updateTimer(){
-
-if(cleared)return;
-
-elapsedTime=(Date.now()-startTime)/1000;
-
-timerUI.textContent=`TIME: ${elapsedTime.toFixed(1)}s`;
-
-const key=`level-${level}`;
-const best=bestScores[key]||0;
-
-bestScoreUI.textContent=`BEST: ${best.toFixed(1)}s`;
-
 }
 
-function updateBestScoreUI(){
-
-const key=`level-${level}`;
-const best=bestScores[key]||0;
-
-bestScoreUI.textContent=`BEST: ${best.toFixed(1)}s`;
-
-}
-
+// ===== 分割盤面作成 =====
 function splitBoard(size){
-
 const cells=[];
-
 for(let y=0;y<size;y++)
 for(let x=0;x<size;x++)
 cells.push({x,y,used:false});
 
 const result=[];
-
 while(cells.some(c=>!c.used)){
-
 const start=cells.find(c=>!c.used);
 start.used=true;
-
 const piece=[start];
-
 const target=Math.floor(Math.random()*3)+2;
-
 while(piece.length<target){
-
-const opts=cells.filter(n=>!n.used &&
-piece.some(p=>Math.abs(n.x-p.x)+Math.abs(n.y-p.y)===1));
-
-if(!opts.length)break;
-
+const opts=cells.filter(n=>!n.used && piece.some(p=>Math.abs(n.x-p.x)+Math.abs(n.y-p.y)===1));
+if(!opts.length) break;
 const n=opts[Math.floor(Math.random()*opts.length)];
-
 n.used=true;
 piece.push(n);
-
 }
-
 result.push(piece);
-
 }
-
 return result;
-
 }
+
+// ===== クリア判定 =====
 function checkClear(){
-
 if(pieces.every(p=>p.placed)){
-
 cleared=true;
-
 clearInterval(timerInterval);
-
 const time=elapsedTime;
-
 const key=`level-${level}`;
-
 if(!bestScores[key] || time<bestScores[key]){
 bestScores[key]=time;
 localStorage.setItem("bestScores",JSON.stringify(bestScores));
 }
-
 clearText.textContent="CLEAR!";
 scoreText.textContent=`TIME: ${time.toFixed(1)}s   BEST: ${(bestScores[key]||time).toFixed(1)}s`;
-
 gameUI.style.display="none";
 clearUI.style.display="flex";
 
-/* 次レベル解放 */
 if(!reachedLevel.L1 || level>=reachedLevel.L1){
 reachedLevel.L1=level+1;
 localStorage.setItem("reachedLevel",JSON.stringify(reachedLevel));
 }
-
 }
 }
 
+// ===== 描画 =====
 function draw(){
-
 ctx.clearRect(0,0,canvas.width,canvas.height);
-
 ctx.strokeStyle="#000";
-
 for(let i=1;i<gridSize;i++){
-
 ctx.beginPath();
 ctx.moveTo(gridX+i*cell,gridY);
 ctx.lineTo(gridX+i*cell,gridY+gridSize*cell);
 ctx.stroke();
-
 ctx.beginPath();
 ctx.moveTo(gridX,gridY+i*cell);
 ctx.lineTo(gridX+gridSize*cell,gridY+i*cell);
 ctx.stroke();
-
 }
-
 ctx.lineWidth=3;
 ctx.strokeRect(gridX,gridY,gridSize*cell,gridSize*cell);
 ctx.lineWidth=1;
@@ -523,29 +460,26 @@ const py=p.y+b.y*cell;
 ctx.strokeRect(px,py,cell,cell);
 });
 });
-/* ★答え表示 */
+
 if(reveal){
-
 ctx.globalAlpha=0.3;
-
 pieces.forEach(p=>{
-if(!p.placed)return; // ★追加
-
+if(!p.placed) return;
 p.shape.forEach(b=>{
 const px=p.x+b.x*cell;
 const py=p.y+b.y*cell;
 ctx.fillRect(px,py,cell,cell);
 });
-
 });
-
 ctx.globalAlpha=1;
-
 }
+
 requestAnimationFrame(draw);
-
 }
 
+draw();
+
+// ===== マウス操作 =====
 function getMousePos(e){
 const rect=canvas.getBoundingClientRect();
 return{
@@ -555,142 +489,74 @@ y:(e.clientY-rect.top)*(canvas.height/rect.height)
 }
 
 canvas.addEventListener("mousedown",e=>{
-
 const m=getMousePos(e);
-
 for(let i=pieces.length-1;i>=0;i--){
-
 const p=pieces[i];
-
 for(const b of p.shape){
-
 const px=p.x+b.x*cell;
 const py=p.y+b.y*cell;
-
-if(
-m.x>px &&
-m.x<px+cell &&
-m.y>py &&
-m.y<py+cell
-){
-
-/* 盤に置いてあるピースなら元の位置へ戻す */
-if(p.placed){
-p.x=p.startX;
-p.y=p.startY;
-p.placed=false;
-return;
-}
-
-/* 通常ドラッグ */
+if(m.x>px && m.x<px+cell && m.y>py && m.y<py+cell){
+if(p.placed){ p.x=p.startX; p.y=p.startY; p.placed=false; return; }
 dragging=p;
-
 dragging.startX=p.x;
 dragging.startY=p.y;
-
 ox=m.x-p.x;
 oy=m.y-p.y;
-
 return;
 }
-
 }
-
 }
-
 });
-
-
 
 canvas.addEventListener("mousemove",e=>{
-
-if(!dragging)return;
-
+if(!dragging) return;
 const m=getMousePos(e);
-
 dragging.x=m.x-ox;
 dragging.y=m.y-oy;
-
 });
 
-/* ★変更：吸着処理 */
 window.addEventListener("mouseup",()=>{
-
-if(!dragging)return;
-
+if(!dragging) return;
 const gx=Math.round((dragging.x-gridX)/cell);
 const gy=Math.round((dragging.y-gridY)/cell);
-
-/* ピースが盤に全部入るかチェック */
 let inside=true;
-
 for(const b of dragging.shape){
-
 const x=gx+b.x;
 const y=gy+b.y;
-
-if(
-x<0 ||
-y<0 ||
-x>=gridSize ||
-y>=gridSize
-){
-inside=false;
-break;
+if(x<0 || y<0 || x>=gridSize || y>=gridSize){ inside=false; break; }
 }
-
-}
-
-/* 全部入る時だけ吸着 */
 if(inside){
 dragging.x=gridX+gx*cell;
 dragging.y=gridY+gy*cell;
 dragging.placed=true;
-
 checkClear();
-
 }else{
 dragging.x=dragging.startX;
 dragging.y=dragging.startY;
 }
-
 dragging=null;
-
 });
 
+// ===== スペースキーで答え確認 =====
 let spacePressed=false;
-
 window.addEventListener("keydown",e=>{
-
-if(e.code!=="Space")return;
-if(spacePressed)return; // ★追加
+if(e.code!=="Space") return;
+if(spacePressed) return;
 spacePressed=true;
-
-if(cleared)return;
-
-/* ライフ減少 */
+if(cleared) return;
 spaceLife--;
 renderSpaceLife();
-
 if(spaceLife<=0){
 gameUI.style.display="none";
 gameOver.style.display="flex";
 return;
 }
-
 reveal=true;
-
-setTimeout(()=>{
-reveal=false;
-},1000);
-
+setTimeout(()=>{ reveal=false; },1000);
 });
-draw();
 
 window.addEventListener("keyup",e=>{
-if(e.code==="Space"){
-spacePressed=false;
-}
+if(e.code==="Space"){ spacePressed=false; }
 });
 
 </script>
