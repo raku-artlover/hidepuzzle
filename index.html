@@ -433,32 +433,28 @@ function draw(){
   ctx.lineWidth=1;
 
   pieces.forEach(p=>{
-    p.shape.forEach(b=>{
-      const px=p.x+b.x*cell;
-      const py=p.y+b.y*cell;
-      ctx.strokeRect(px,py,cell,cell);
-    });
-  });
-
-  // ===== スペースキーで黒塗り＋白枠 =====
-  if(reveal){
-    pieces.forEach(p=>{
-      if(!p.placed) return;
+    if(reveal && p.placed){
+      // スペースキー押下時：黒塗り＋白枠
       p.shape.forEach(b=>{
         const px=p.x+b.x*cell;
         const py=p.y+b.y*cell;
-
-        // 塗りつぶし黒
         ctx.fillStyle="#000";
         ctx.fillRect(px,py,cell,cell);
-
-        // 外枠白
         ctx.strokeStyle="#fff";
         ctx.lineWidth=2;
         ctx.strokeRect(px,py,cell,cell);
       });
-    });
-  }
+    } else {
+      // 通常時：線のみ
+      p.shape.forEach(b=>{
+        const px=p.x+b.x*cell;
+        const py=p.y+b.y*cell;
+        ctx.strokeStyle="#000";
+        ctx.lineWidth=1;
+        ctx.strokeRect(px,py,cell,cell);
+      });
+    }
+  });
 
   requestAnimationFrame(draw);
 }
