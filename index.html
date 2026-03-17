@@ -434,17 +434,56 @@ function draw(){
 
   pieces.forEach(p=>{
     if(reveal && p.placed){
-      // スペースキー押下時：黒塗り＋白枠
-      p.shape.forEach(b=>{
-        const px=p.x+b.x*cell;
-        const py=p.y+b.y*cell;
-        ctx.fillStyle="#000";
-        ctx.fillRect(px,py,cell,cell);
-        ctx.strokeStyle="#fff";
-        ctx.lineWidth=2;
-        ctx.strokeRect(px,py,cell,cell);
-      });
-    } else {
+  // 黒で塗る
+  p.shape.forEach(b=>{
+    const px=p.x+b.x*cell;
+    const py=p.y+b.y*cell;
+    ctx.fillStyle="#000";
+    ctx.fillRect(px,py,cell,cell);
+  });
+
+  // 外形線だけ描く
+  ctx.strokeStyle="#fff";
+  ctx.lineWidth=2;
+
+  p.shape.forEach(b=>{
+    const x=b.x;
+    const y=b.y;
+
+    const px=p.x+x*cell;
+    const py=p.y+y*cell;
+
+    // 上
+    if(!p.shape.some(n=>n.x===x && n.y===y-1)){
+      ctx.beginPath();
+      ctx.moveTo(px,py);
+      ctx.lineTo(px+cell,py);
+      ctx.stroke();
+    }
+    // 下
+    if(!p.shape.some(n=>n.x===x && n.y===y+1)){
+      ctx.beginPath();
+      ctx.moveTo(px,py+cell);
+      ctx.lineTo(px+cell,py+cell);
+      ctx.stroke();
+    }
+    // 左
+    if(!p.shape.some(n=>n.x===x-1 && n.y===y)){
+      ctx.beginPath();
+      ctx.moveTo(px,py);
+      ctx.lineTo(px,py+cell);
+      ctx.stroke();
+    }
+    // 右
+    if(!p.shape.some(n=>n.x===x+1 && n.y===y)){
+      ctx.beginPath();
+      ctx.moveTo(px+cell,py);
+      ctx.lineTo(px+cell,py+cell);
+      ctx.stroke();
+    }
+  });
+
+} else {
       // 通常時：線のみ
       p.shape.forEach(b=>{
         const px=p.x+b.x*cell;
