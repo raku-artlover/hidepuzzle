@@ -321,7 +321,6 @@ function startLevel(){
 
   const shapes=splitBoard(gridSize);
 
-  // 重なりなしで初期配置
   const margin = 20;
   const placedPieces = [];
 
@@ -441,17 +440,24 @@ function draw(){
     });
   });
 
+  // ===== スペースキーで黒塗り＋白枠 =====
   if(reveal){
-    ctx.globalAlpha=0.3;
     pieces.forEach(p=>{
       if(!p.placed) return;
       p.shape.forEach(b=>{
         const px=p.x+b.x*cell;
         const py=p.y+b.y*cell;
+
+        // 塗りつぶし黒
+        ctx.fillStyle="#000";
         ctx.fillRect(px,py,cell,cell);
+
+        // 外枠白
+        ctx.strokeStyle="#fff";
+        ctx.lineWidth=2;
+        ctx.strokeRect(px,py,cell,cell);
       });
     });
-    ctx.globalAlpha=1;
   }
 
   requestAnimationFrame(draw);
@@ -504,7 +510,6 @@ window.addEventListener("mouseup",()=>{
 
   let inside=true;
 
-  // 盤内チェック
   for(const b of dragging.shape){
     const x=gx+b.x;
     const y=gy+b.y;
@@ -514,7 +519,6 @@ window.addEventListener("mouseup",()=>{
     }
   }
 
-  // 他ピースとの重なりチェック
   if(inside){
     for(const other of pieces){
       if(other===dragging || !other.placed) continue;
