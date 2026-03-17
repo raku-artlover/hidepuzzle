@@ -389,17 +389,18 @@ function splitBoard(size){
     start.used=true;
     const piece=[start];
     const minSize = 2;
-const maxSize = 2 + Math.floor(level / 1.5);
+const maxSize = Math.max(3, 2 + Math.floor(level / 1.5));
 
 let target;
 
 if(Math.random() < 0.6){
-  // 小さいピース多め
   target = Math.floor(Math.random()*2)+2;
 }else{
-  // たまにデカいの
-  target = Math.floor(Math.random()*(maxSize-3))+4;
+  target = Math.floor(Math.random()*(maxSize-3+1))+3;
 }
+
+
+
     while(piece.length<target){
       const opts=cells.filter(n=>!n.used && piece.some(p=>Math.abs(n.x-p.x)+Math.abs(n.y-p.y)===1));
       if(!opts.length) break;
