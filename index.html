@@ -263,14 +263,17 @@ document.getElementById("retry").onclick=()=>{
 document.getElementById("home").onclick=()=>{
   gameUI.style.display="none";
   title.style.display="flex";
+  level = 0; // ←追加
 };
 document.getElementById("clearHome").onclick=()=>{
   clearUI.style.display="none";
   title.style.display="flex";
+  level = 0; // ←追加
 };
 document.getElementById("goHome").onclick=()=>{
   gameOver.style.display="none";
   title.style.display="flex";
+  level = 0; // ←追加
 };
 document.getElementById("goRetry").onclick=()=>{
   gameOver.style.display="none";
@@ -337,7 +340,18 @@ function startLevel(){
       cx = margin + Math.random()*(canvas.width - margin*2 - w);
       cy = margin + Math.random()*(gridY - margin - h);
       attempts++;
-    }while(placedPieces.some(p=>piecesOverlap(p,{shape, x:cx-minX*cell, y:cy-minY*cell})) && attempts<100);
+    }
+
+while(!placedOK){
+  cx = margin + Math.random()*(canvas.width - margin*2 - w);
+  cy = margin + Math.random()*(gridY - margin - h);
+
+  const testPiece = {shape, x:cx-minX*cell, y:cy-minY*cell};
+
+  if(!placedPieces.some(p=>piecesOverlap(p,testPiece))){
+    placedOK = true;
+  }
+}
 
     const pieceObj = {shape, x:cx-minX*cell, y:cy-minY*cell, placed:false};
     pieces.push(pieceObj);
