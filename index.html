@@ -531,6 +531,7 @@ y:(e.clientY-rect.top)*(canvas.height/rect.height)
 }
 
 canvas.addEventListener("mousedown",e=>{
+canvas.addEventListener("mousedown",e=>{
 
 const m=getMousePos(e);
 
@@ -549,7 +550,53 @@ m.x<px+cell &&
 m.y>py &&
 m.y<py+cell
 ){
+
+/* 盤に置いてあるピースなら元の位置へ */
+if(p.placed){
+p.x=p.startX;
+p.y=p.startY;
+p.placed=false;
+return;
+}
+
 dragging=p;
+
+dragging.startX=p.x;
+dragging.startY=p.y;
+
+ox=m.x-p.x;
+oy=m.y-p.y;
+return;
+
+}
+
+}
+
+}
+
+});
+const m=getMousePos(e);
+
+for(let i=pieces.length-1;i>=0;i--){
+
+const p=pieces[i];
+
+for(const b of p.shape){
+
+const px=p.x+b.x*cell;
+const py=p.y+b.y*cell;
+
+if(
+m.x>px &&
+m.x<px+cell &&
+m.y>py &&
+m.y<py+cell
+){
+dragging=p;
+
+dragging.startX=p.x;
+dragging.startY=p.y;
+
 ox=m.x-p.x;
 oy=m.y-p.y;
 return;
