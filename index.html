@@ -229,7 +229,7 @@ let oy=0;
 let cleared=false;
 let reveal=false;
 
-const BOARD_PIXEL=Math.min(canvas.width,canvas.height)*0.6;
+const BOARD_PIXEL=160;
 
 let startTime;
 let elapsedTime=0;
@@ -338,7 +338,7 @@ pieces=[];
 
 /* ★追加：先に盤位置を決める */
 gridX=canvas.width/2-gridSize*cell/2;
-gridY=canvas.height-gridSize*cell-120;
+gridY=canvas.height-gridSize*cell-80;
 
 const shapes=splitBoard(gridSize);
 
@@ -576,7 +576,38 @@ return;
 
 
 });
+const m=getMousePos(e);
 
+for(let i=pieces.length-1;i>=0;i--){
+
+const p=pieces[i];
+
+for(const b of p.shape){
+
+const px=p.x+b.x*cell;
+const py=p.y+b.y*cell;
+
+if(
+m.x>px &&
+m.x<px+cell &&
+m.y>py &&
+m.y<py+cell
+){
+dragging=p;
+
+dragging.startX=p.x;
+dragging.startY=p.y;
+
+ox=m.x-p.x;
+oy=m.y-p.y;
+return;
+}
+
+}
+
+}
+
+});
 
 canvas.addEventListener("mousemove",e=>{
 
