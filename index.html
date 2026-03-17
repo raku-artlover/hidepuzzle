@@ -106,8 +106,6 @@ align-items:center;
 gap:10px;
 }
 
-/* ライフ */
-
 #spaceLife{
 display:flex;
 gap:10px;
@@ -227,7 +225,6 @@ let ox=0;
 let oy=0;
 
 let cleared=false;
-let reveal=false;
 
 const BOARD_PIXEL=160;
 
@@ -257,44 +254,9 @@ menuScreen.style.display="none";
 title.style.display="flex";
 };
 
-document.getElementById("next").onclick=()=>{
-
-levels.push(levels[levels.length-1]+1);
-
-level++;
-
-clearUI.style.display="none";
-gameUI.style.display="flex";
-
-startLevel();
-
-};
-
-document.getElementById("retry").onclick=()=>{
-clearUI.style.display="none";
-gameUI.style.display="flex";
-startLevel();
-};
-
 document.getElementById("home").onclick=()=>{
 gameUI.style.display="none";
 title.style.display="flex";
-};
-
-document.getElementById("clearHome").onclick=()=>{
-clearUI.style.display="none";
-title.style.display="flex";
-};
-
-document.getElementById("goHome").onclick=()=>{
-gameOver.style.display="none";
-title.style.display="flex";
-};
-
-document.getElementById("goRetry").onclick=()=>{
-gameOver.style.display="none";
-gameUI.style.display="flex";
-startLevel();
 };
 
 function renderSpaceLife(){
@@ -326,7 +288,6 @@ levelButtonsDiv.appendChild(btn);
 function startLevel(){
 
 cleared=false;
-reveal=false;
 
 spaceLife=4;
 renderSpaceLife();
@@ -336,7 +297,6 @@ cell=Math.floor(BOARD_PIXEL/gridSize);
 
 pieces=[];
 
-/* ★追加：先に盤位置を決める */
 gridX=canvas.width/2-gridSize*cell/2;
 gridY=canvas.height-gridSize*cell-80;
 
@@ -356,7 +316,6 @@ const maxY=Math.max(...shape.map(b=>b.y));
 const w=(maxX-minX+1)*cell;
 const h=(maxY-minY+1)*cell;
 
-/* ★追加：盤と重ならない */
 if(cy + h > gridY-40){
 cx=20;
 cy+=rowH+cell*0.5;
@@ -386,8 +345,6 @@ startTime=Date.now();
 clearInterval(timerInterval);
 timerInterval=setInterval(updateTimer,50);
 
-updateBestScoreUI();
-
 }
 
 function updateTimer(){
@@ -397,20 +354,6 @@ if(cleared)return;
 elapsedTime=(Date.now()-startTime)/1000;
 
 timerUI.textContent=`TIME: ${elapsedTime.toFixed(1)}s`;
-
-const key=`level-${level}`;
-const best=bestScores[key]||0;
-
-bestScoreUI.textContent=`BEST: ${best.toFixed(1)}s`;
-
-}
-
-function updateBestScoreUI(){
-
-const key=`level-${level}`;
-const best=bestScores[key]||0;
-
-bestScoreUI.textContent=`BEST: ${best.toFixed(1)}s`;
 
 }
 
@@ -453,37 +396,6 @@ result.push(piece);
 
 return result;
 
-}
-function checkClear(){
-
-if(pieces.every(p=>p.placed)){
-
-cleared=true;
-
-clearInterval(timerInterval);
-
-const time=elapsedTime;
-
-const key=`level-${level}`;
-
-if(!bestScores[key] || time<bestScores[key]){
-bestScores[key]=time;
-localStorage.setItem("bestScores",JSON.stringify(bestScores));
-}
-
-clearText.textContent="CLEAR!";
-scoreText.textContent=`TIME: ${time.toFixed(1)}s   BEST: ${(bestScores[key]||time).toFixed(1)}s`;
-
-gameUI.style.display="none";
-clearUI.style.display="flex";
-
-/* 次レベル解放 */
-if(!reachedLevel.L1 || level>=reachedLevel.L1){
-reachedLevel.L1=level+1;
-localStorage.setItem("reachedLevel",JSON.stringify(reachedLevel));
-}
-
-}
 }
 
 function draw(){
@@ -550,15 +462,6 @@ m.y>py &&
 m.y<py+cell
 ){
 
-/* 盤に置いてあるピースなら元の位置へ戻す */
-if(p.placed){
-p.x=p.startX;
-p.y=p.startY;
-p.placed=false;
-return;
-}
-
-/* 通常ドラッグ */
 dragging=p;
 
 dragging.startX=p.x;
@@ -567,39 +470,6 @@ dragging.startY=p.y;
 ox=m.x-p.x;
 oy=m.y-p.y;
 
-return;
-}
-
-}
-
-}
-
-
-});
-const m=getMousePos(e);
-
-for(let i=pieces.length-1;i>=0;i--){
-
-const p=pieces[i];
-
-for(const b of p.shape){
-
-const px=p.x+b.x*cell;
-const py=p.y+b.y*cell;
-
-if(
-m.x>px &&
-m.x<px+cell &&
-m.y>py &&
-m.y<py+cell
-){
-dragging=p;
-
-dragging.startX=p.x;
-dragging.startY=p.y;
-
-ox=m.x-p.x;
-oy=m.y-p.y;
 return;
 }
 
@@ -620,7 +490,6 @@ dragging.y=m.y-oy;
 
 });
 
-/* ★変更：吸着処理 */
 window.addEventListener("mouseup",()=>{
 
 if(!dragging)return;
@@ -628,38 +497,8 @@ if(!dragging)return;
 const gx=Math.round((dragging.x-gridX)/cell);
 const gy=Math.round((dragging.y-gridY)/cell);
 
-/* ピースが盤に全部入るかチェック */
-let inside=true;
-
-for(const b of dragging.shape){
-
-const x=gx+b.x;
-const y=gy+b.y;
-
-if(
-x<0 ||
-y<0 ||
-x>=gridSize ||
-y>=gridSize
-){
-inside=false;
-break;
-}
-
-}
-
-/* 全部入る時だけ吸着 */
-if(inside){
 dragging.x=gridX+gx*cell;
 dragging.y=gridY+gy*cell;
-dragging.placed=true;
-
-checkClear();
-
-}else{
-dragging.x=dragging.startX;
-dragging.y=dragging.startY;
-}
 
 dragging=null;
 
