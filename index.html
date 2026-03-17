@@ -212,31 +212,6 @@ clearInterval(timerInterval);
 startLevel();
 };
 
-window.addEventListener("keydown",e=>{
-
-if(e.code!=="Space")return;
-if(cleared)return;
-
-/* ライフ減少 */
-spaceLife--;
-renderSpaceLife();
-
-/* 0ならゲームオーバー */
-if(spaceLife<=0){
-gameUI.style.display="none";
-gameOver.style.display="flex";
-return;
-}
-
-/* 表示フラグON */
-reveal=true;
-
-/* 1秒だけ表示 */
-setTimeout(()=>{
-reveal=false;
-},1000);
-
-});
 
 const spaceLifeDiv=document.getElementById("spaceLife");
 
@@ -370,8 +345,9 @@ gridY=canvas.height-gridSize*cell-80;
 
 const shapes=splitBoard(gridSize);
 
-let cx=20;
-let cy=40;
+const margin=20;
+let cx=margin;
+let cy=margin;
 let rowH=0;
 
 shapes.forEach(shape=>{
@@ -384,17 +360,18 @@ const maxY=Math.max(...shape.map(b=>b.y));
 const w=(maxX-minX+1)*cell;
 const h=(maxY-minY+1)*cell;
 
-/* ★追加：盤と重ならない */
-if(cy + h > gridY-40){
-cx=20;
-cy+=rowH+cell*0.5;
-rowH=0;
+/* 横はみ出し防止 */
+if(cx + w > canvas.width - margin){
+cx = margin;
+cy += rowH + cell*0.5;
+rowH = 0;
 }
 
-if(cx+w>canvas.width-20){
-cx=20;
-cy+=rowH+cell*0.5;
-rowH=0;
+/* 下はみ出し防止 */
+if(cy + h > gridY - margin){
+cy = margin;
+cx = margin;
+rowH = 0;
 }
 
 pieces.push({
@@ -404,10 +381,13 @@ y:cy-minY*cell,
 placed:false
 });
 
-cx+=w+cell*0.5;
-rowH=Math.max(rowH,h);
+cx += w + cell*0.5;
+rowH = Math.max(rowH, h);
 
 });
+
+
+
 
 startTime=Date.now();
 
@@ -415,8 +395,6 @@ clearInterval(timerInterval);
 timerInterval=setInterval(updateTimer,50);
 
 updateBestScoreUI();
-
-}
 
 function updateTimer(){
 
@@ -551,11 +529,14 @@ if(reveal){
 ctx.globalAlpha=0.3;
 
 pieces.forEach(p=>{
+if(!p.placed)return; // ★追加
+
 p.shape.forEach(b=>{
-const px=gridX+b.x*cell;
-const py=gridY+b.y*cell;
+const px=p.x+b.x*cell;
+const py=p.y+b.y*cell;
 ctx.fillRect(px,py,cell,cell);
 });
+
 });
 
 ctx.globalAlpha=1;
@@ -677,8 +658,40 @@ dragging=null;
 
 });
 
+let spacePressed=false;
 
+window.addEventListener("keydown",e=>{
+
+if(e.code!=="Space")return;
+if(spacePressed)return; // ★追加
+spacePressed=true;
+
+if(cleared)return;
+
+/* ライフ減少 */
+spaceLife--;
+renderSpaceLife();
+
+if(spaceLife<=0){
+gameUI.style.display="none";
+gameOver.style.display="flex";
+return;
+}
+
+reveal=true;
+
+setTimeout(()=>{
+reveal=false;
+},1000);
+
+});
 draw();
+
+window.addEventListener("keyup",e=>{
+if(e.code==="Space"){
+spacePressed=false;
+}
+});
 
 </script>
 </body>
