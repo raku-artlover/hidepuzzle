@@ -543,12 +543,28 @@ if(!dragging)return;
 const gx=Math.round((dragging.x-gridX)/cell);
 const gy=Math.round((dragging.y-gridY)/cell);
 
+/* ピースが盤に全部入るかチェック */
+let inside=true;
+
+for(const b of dragging.shape){
+
+const x=gx+b.x;
+const y=gy+b.y;
+
 if(
-gx>=0 &&
-gy>=0 &&
-gx<gridSize &&
-gy<gridSize
+x<0 ||
+y<0 ||
+x>=gridSize ||
+y>=gridSize
 ){
+inside=false;
+break;
+}
+
+}
+
+/* 全部入る時だけ吸着 */
+if(inside){
 dragging.x=gridX+gx*cell;
 dragging.y=gridY+gy*cell;
 }
