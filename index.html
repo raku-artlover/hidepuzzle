@@ -229,7 +229,7 @@ let oy=0;
 let cleared=false;
 let reveal=false;
 
-const BOARD_PIXEL=260;
+const BOARD_PIXEL=160;
 
 let startTime;
 let elapsedTime=0;
@@ -332,7 +332,7 @@ pieces=[];
 
 /* ★追加：先に盤位置を決める */
 gridX=canvas.width/2-gridSize*cell/2;
-gridY=canvas.height-gridSize*cell-20;
+gridY=canvas.height-gridSize*cell-80;
 
 const shapes=splitBoard(gridSize);
 
