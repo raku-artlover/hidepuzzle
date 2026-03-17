@@ -121,6 +121,30 @@ canvas{
   opacity:0.3;
   cursor:not-allowed;
 }
+#rankingList{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:20px;
+  width:90%;
+  max-width:600px;
+}
+
+.rankColumn{
+  border:2px solid #000;
+  padding:10px;
+  text-align:center;
+}
+
+.rankTitle{
+  font-size:20px;
+  margin-bottom:10px;
+  font-weight:bold;
+}
+
+.rankItem{
+  font-size:16px;
+  margin:3px 0;
+}
 </style>
 </head>
 <body>
@@ -714,16 +738,31 @@ function showRanking(){
     const key = `level-${i}`;
     const data = rankings[key] || [];
 
-    const div = document.createElement("div");
-    div.innerHTML = `<h3>${size}×${size}</h3>`;
+    const column = document.createElement("div");
+    column.className = "rankColumn";
 
-    data.forEach((r, index)=>{
-      const p = document.createElement("p");
-      p.textContent = `${index+1}. ${r.name} - ${r.time.toFixed(1)}s`;
-      div.appendChild(p);
-    });
+    // タイトル（4×4とか）
+    const title = document.createElement("div");
+    title.className = "rankTitle";
+    title.textContent = `${size}×${size}`;
+    column.appendChild(title);
 
-    rankingList.appendChild(div);
+    // 記録
+    if(data.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "rankItem";
+      empty.textContent = "NO DATA";
+      column.appendChild(empty);
+    }else{
+      data.forEach((r, index)=>{
+        const item = document.createElement("div");
+        item.className = "rankItem";
+        item.textContent = `${index+1}. ${r.name} ${r.time.toFixed(1)}s`;
+        column.appendChild(item);
+      });
+    }
+
+    rankingList.appendChild(column);
   });
 }
 
