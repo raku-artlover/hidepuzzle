@@ -258,10 +258,16 @@ title.style.display="flex";
 };
 
 document.getElementById("next").onclick=()=>{
+
+levels.push(levels[levels.length-1]+1);
+
 level++;
-startLevel();
+
 clearUI.style.display="none";
 gameUI.style.display="flex";
+
+startLevel();
+
 };
 
 document.getElementById("retry").onclick=()=>{
@@ -448,6 +454,37 @@ result.push(piece);
 return result;
 
 }
+function checkClear(){
+
+if(pieces.every(p=>p.placed)){
+
+cleared=true;
+
+clearInterval(timerInterval);
+
+const time=elapsedTime;
+
+const key=`level-${level}`;
+
+if(!bestScores[key] || time<bestScores[key]){
+bestScores[key]=time;
+localStorage.setItem("bestScores",JSON.stringify(bestScores));
+}
+
+clearText.textContent="CLEAR!";
+scoreText.textContent=`TIME: ${time.toFixed(1)}s   BEST: ${(bestScores[key]||time).toFixed(1)}s`;
+
+gameUI.style.display="none";
+clearUI.style.display="flex";
+
+/* 次レベル解放 */
+if(!reachedLevel.L1 || level>=reachedLevel.L1){
+reachedLevel.L1=level+1;
+localStorage.setItem("reachedLevel",JSON.stringify(reachedLevel));
+}
+
+}
+}
 
 function draw(){
 
@@ -513,10 +550,6 @@ m.y>py &&
 m.y<py+cell
 ){
 dragging=p;
-
-dragging.startX=p.x;
-dragging.startY=p.y;
-
 ox=m.x-p.x;
 oy=m.y-p.y;
 return;
@@ -568,16 +601,20 @@ break;
 }
 
 /* 全部入る時だけ吸着 */
-
 if(inside){
 dragging.x=gridX+gx*cell;
 dragging.y=gridY+gy*cell;
+dragging.placed=true;
+
+checkClear();
+
 }else{
 dragging.x=dragging.startX;
 dragging.y=dragging.startY;
 }
 
 dragging=null;
+
 });
 
 draw();
