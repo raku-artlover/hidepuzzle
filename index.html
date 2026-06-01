@@ -2,783 +2,143 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>HIDE PUZZLE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oscilloscope</title>
 
 <style>
-body{
-  margin:0;
-  background:#fff;
-  font-family: Helvetica, Arial, sans-serif;
-  touch-action:none;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-.screen{
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  background:#fff;
-  z-index:5;
-}
-
-h1{
-  font-size:48px;
-  letter-spacing:0.05em;
-  margin-bottom:20px;
-  text-align:center;
-}
-
-.btn{
-  padding:12px 40px;
-  border:2px solid #000;
-  font-size:18px;
-  background:none;
-  cursor:pointer;
-  margin:5px;
-  user-select:none;
-}
-
-#game{
-  display:none;
-  flex-direction:column;
-  justify-content:space-between;
-  align-items:center;
-  position:relative;
-  width:100%;
-  height:100vh;
-  max-width:900px;
-  padding:20px;
-  box-sizing:border-box;
-}
-
-#topUI{
-  width:100%;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-#timer{
-  font-size:20px;
-  font-weight:bold;
-}
-
-#bestScoreUI{
-  font-size:16px;
-}
-
-#canvasArea{
-  flex:1;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  width:100%;
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:white;
 }
 
 canvas{
-  background:#fff;
-  width:100%;
-  max-width:600px;
-  height:auto;
-  touch-action:none;
-}
-
-#bottomUI{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-}
-
-#spaceLife{
-  display:flex;
-  gap:10px;
-}
-
-.lifeDot{
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  background:#000;
-}
-
-#levelButtons{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  max-width:300px;
-  margin:10px 0;
-}
-
-#levelButtons button:disabled{
-  opacity:0.3;
-  cursor:not-allowed;
-}
-#rankingList{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:20px;
-  width:90%;
-  max-width:600px;
-}
-
-.rankColumn{
-  border:2px solid #000;
-  padding:10px;
-  text-align:center;
-}
-
-.rankTitle{
-  font-size:20px;
-  margin-bottom:10px;
-  font-weight:bold;
-}
-
-.rankItem{
-  font-size:16px;
-  margin:3px 0;
+    display:block;
 }
 </style>
 </head>
 <body>
 
-<!-- ===== ここまでHTML追加 ===== -->
-
-
-<div id="title" class="screen">
-  <h1>HIDE PUZZLE</h1>
-  <button id="start" class="btn">START</button>
-  <button id="menu" class="btn">MENU</button>
-</div>
-
-<!-- ===== ここから追加（HTML） ===== -->
-<div id="nameScreen" class="screen" style="display:none;">
-  <h1>NAME</h1>
-  <input id="nameInput" maxlength="5" style="font-size:20px; padding:5px;">
-  <button id="nameStart" class="btn">START</button>
-</div>
-
-<div id="rankingScreen" class="screen" style="display:none;">
-  <h1>RANKING</h1>
-  <div id="rankingList"></div>
-  <button id="rankingBack" class="btn">BACK</button>
-</div>
-
-<div id="menuScreen" class="screen" style="display:none;">
-  <h1>SELECT LEVEL</h1>
-  <div id="levelButtons"></div>
-  <button id="rankingBtn" class="btn">RANKING</button>
-  <button id="menuBack" class="btn">BACK</button>
-</div>
-
-
-
-<div id="clear" class="screen" style="display:none">
-  <h1 id="clearText"></h1>
-  <p id="scoreText" style="font-size:20px;"></p>
-  <button id="next" class="btn">NEXT STAGE</button>
-  <button id="retry" class="btn">RETRY</button>
-  <button id="clearHome" class="btn">HOME</button>
-</div>
-
-<div id="gameOver" class="screen" style="display:none">
-  <h1>GAME OVER</h1>
-  <button id="goHome" class="btn">HOME</button>
-  <button id="goRetry" class="btn">RETRY</button>
-</div>
-
-<div id="game">
-  <div id="topUI">
-    <button id="reset" class="btn">RESET</button>
-    <div id="timer">TIME: 0.0s</div>
-    <div id="bestScoreUI">BEST: 0.0s</div>
-    <button id="home" class="btn">HOME</button>
-  </div>
-  <div id="canvasArea">
-    <canvas id="c" width="450" height="450"></canvas>
-  </div>
-  <div id="bottomUI">
-    <div id="spaceLife"></div>
-  </div>
-</div>
-
-
+<canvas id="canvas"></canvas>
 
 <script>
-const canvas=document.getElementById("c");
-const ctx=canvas.getContext("2d");
 
-const title=document.getElementById("title");
-const menuScreen=document.getElementById("menuScreen");
-const levelButtonsDiv=document.getElementById("levelButtons");
-const menuBack=document.getElementById("menuBack");
-const gameUI=document.getElementById("game");
-const clearUI=document.getElementById("clear");
-const gameOver=document.getElementById("gameOver");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-const clearText=document.getElementById("clearText");
-const scoreText=document.getElementById("scoreText");
-
-const timerUI=document.getElementById("timer");
-const bestScoreUI=document.getElementById("bestScoreUI");
-document.getElementById("reset").onclick=()=>{
-  clearInterval(timerInterval);
-  startLevel();
-};
-
-const spaceLifeDiv=document.getElementById("spaceLife");
-
-let LEVELS=[4,5,6,7];
-let levels=LEVELS;
-let level=0;
-
-let gridSize;
-let cell;
-let gridX;
-let gridY;
-
-let pieces=[];
-let dragging=null;
-let ox=0;
-let oy=0;
-
-let cleared=false;
-let reveal=false;
-
-const BOARD_PIXEL=160;
-
-let startTime;
-let elapsedTime=0;
-let timerInterval;
-
-let bestScores=JSON.parse(localStorage.getItem("bestScores")||"{}");
-let reachedLevel=JSON.parse(localStorage.getItem("reachedLevel")||'{"L1":0}');
-
-let spaceLife=4;
-
-// ===== タイマー =====
-function updateTimer(){
-  if(cleared) return;
-  elapsedTime = (Date.now() - startTime)/1000;
-  timerUI.textContent = `TIME: ${elapsedTime.toFixed(1)}s`;
-  const key = `level-${level}`;
-  const best = bestScores[key] || 0;
-  bestScoreUI.textContent = `BEST: ${best.toFixed(1)}s`;
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 }
-function updateBestScoreUI(){
-  const key = `level-${level}`;
-  const best = bestScores[key];
-bestScoreUI.textContent = best ? `BEST: ${best.toFixed(1)}s` : "BEST: --";
-  bestScoreUI.textContent = `BEST: ${best.toFixed(1)}s`;
+resize();
+window.addEventListener("resize", resize);
+
+// =======================
+// 設定
+// =======================
+
+// 1秒で画面横断
+const SCROLL_SECONDS = 1;
+
+// 3分で停止
+const TOTAL_DURATION = 180;
+
+// 1秒あたり記録する点数
+const SAMPLE_RATE = 120;
+
+// 表示点数
+let maxPoints = SAMPLE_RATE * SCROLL_SECONDS;
+
+let points = [];
+
+let startTime = performance.now();
+let lastSample = performance.now();
+
+function generateValue(t){
+
+    // 仮データ
+    return (
+        Math.sin(t * 2 * Math.PI * 1.2) * 150 +
+        Math.sin(t * 2 * Math.PI * 4.3) * 40 +
+        (Math.random()-0.5) * 20
+    );
+
 }
 
-// ===== ホームボタン =====
+function addSample(){
 
-document.getElementById("menu").onclick=()=>{
-  title.style.display="none";
-  menuScreen.style.display="flex";
-  renderLevelButtons();
-};
-menuBack.onclick=()=>{
-  menuScreen.style.display="none";
-  title.style.display="flex";
-};
-document.getElementById("next").onclick=()=>{
-  levels.push(levels[levels.length-1]+1);
-  level++;
-  clearUI.style.display="none";
-  gameUI.style.display="flex";
-  startLevel();
-};
-document.getElementById("retry").onclick=()=>{
-  clearUI.style.display="none";
-  gameUI.style.display="flex";
-  startLevel();
-};
-document.getElementById("home").onclick=()=>{
-  gameUI.style.display="none";
-  title.style.display="flex";
-  level = 0; // ←追加
-};
-document.getElementById("clearHome").onclick=()=>{
-  clearUI.style.display="none";
-  title.style.display="flex";
-  level = 0; // ←追加
-};
-document.getElementById("goHome").onclick=()=>{
-  gameOver.style.display="none";
-  title.style.display="flex";
-  level = 0; // ←追加
-};
-document.getElementById("goRetry").onclick=()=>{
-  gameOver.style.display="none";
-  gameUI.style.display="flex";
-  startLevel();
-};
+    const t = (performance.now() - startTime) / 1000;
 
-// ===== ライフ表示 =====
-function renderSpaceLife(){
-  spaceLifeDiv.innerHTML="";
-  for(let i=0;i<spaceLife;i++){
-    const dot=document.createElement("div");
-    dot.className="lifeDot";
-    spaceLifeDiv.appendChild(dot);
-  }
-}
+    points.push(generateValue(t));
 
-// ===== レベルボタン =====
-function renderLevelButtons(){
-  levelButtonsDiv.innerHTML="";
-  LEVELS.forEach((size,i)=>{
-    const btn=document.createElement("button");
-    btn.className="btn";
-    btn.textContent=`${size}×${size}`;
-    if(i>reachedLevel.L1)btn.disabled=true;
-    btn.onclick=()=>{
-      level=i;
-      menuScreen.style.display="none";
-      gameUI.style.display="flex";
-      startLevel();
-    };
-    levelButtonsDiv.appendChild(btn);
-  });
-}
-
-// ===== レベル開始 (重なりなし) =====
-function startLevel(){
-  cleared=false;
-  reveal=false;
-  spaceLife=4;
-  renderSpaceLife();
-  gridSize=levels[level];
-  cell=Math.floor(BOARD_PIXEL/gridSize);
-  pieces=[];
-
-  gridX=canvas.width/2-gridSize*cell/2;
-  gridY=canvas.height-gridSize*cell-80;
-
-  const shapes=splitBoard(gridSize);
-
-  const margin = 20;
-  const placedPieces = [];
-
-  shapes.forEach(shape=>{
-    const minX=Math.min(...shape.map(b=>b.x));
-    const minY=Math.min(...shape.map(b=>b.y));
-    const maxX=Math.max(...shape.map(b=>b.x));
-    const maxY=Math.max(...shape.map(b=>b.y));
-    const w=(maxX-minX+1)*cell;
-    const h=(maxY-minY+1)*cell;
-
-   let cx, cy;
-let placedOK = false;
-
-while(!placedOK){
-  cx = margin + Math.random()*(canvas.width - margin*2 - w);
-  cy = margin + Math.random()*(gridY - margin - h);
-
-  const testPiece = {shape, x:cx-minX*cell, y:cy-minY*cell};
-
-  if(!placedPieces.some(p=>piecesOverlap(p,testPiece))){
-    placedOK = true;
-  }
-}
-
-    const pieceObj = {shape, x:cx-minX*cell, y:cy-minY*cell, placed:false};
-    pieces.push(pieceObj);
-    placedPieces.push(pieceObj);
-  });
-
-  startTime=Date.now();
-  clearInterval(timerInterval);
-  timerInterval=setInterval(updateTimer,50);
-  updateBestScoreUI();
-}
-
-// ===== ピース重なり判定 =====
-function piecesOverlap(p1, p2){
-  for(const b1 of p1.shape){
-    const x1 = p1.x + b1.x*cell;
-    const y1 = p1.y + b1.y*cell;
-    for(const b2 of p2.shape){
-      const x2 = p2.x + b2.x*cell;
-      const y2 = p2.y + b2.y*cell;
-      if(x1 < x2 + cell && x1 + cell > x2 && y1 < y2 + cell && y1 + cell > y2){
-        return true;
-      }
+    while(points.length > maxPoints){
+        points.shift();
     }
-  }
-  return false;
 }
 
-// ===== 分割盤面 =====
-function splitBoard(size){
-  const cells=[];
-  for(let y=0;y<size;y++)
-    for(let x=0;x<size;x++)
-      cells.push({x,y,used:false});
-
-  const result=[];
-  while(cells.some(c=>!c.used)){
-    const start=cells.find(c=>!c.used);
-    start.used=true;
-    const piece=[start];
-    const minSize = 2;
-const maxSize = Math.min(6, 3 + Math.floor(level));
-
-let target;
-
-if(Math.random() < Math.max(0.2, 0.6 - level*0.1)){
-  target = Math.floor(Math.random()*2)+2;
-}else{
-  target = Math.floor(Math.random()*(maxSize-3+1))+3;
-
-}
-
-
-
-    while(piece.length<target){
-      const opts=cells.filter(n=>!n.used && piece.some(p=>Math.abs(n.x-p.x)+Math.abs(n.y-p.y)===1));
-      if(!opts.length) break;
-      const n=opts[Math.floor(Math.random()*opts.length)];
-      n.used=true;
-      piece.push(n);
-    }
-    result.push(piece);
-  }
-  return result;
-}
-
-// ===== クリア判定 =====
-function checkClear(){
-  if(pieces.every(p=>p.placed)){
-    cleared=true;
-    clearInterval(timerInterval);
-    const time=elapsedTime;
-    const key=`level-${level}`;
-    if(!bestScores[key] || time<bestScores[key]){
-      bestScores[key]=time;
-      localStorage.setItem("bestScores",JSON.stringify(bestScores));
-    }
-    clearText.textContent="CLEAR!";
-    scoreText.textContent=`TIME: ${time.toFixed(1)}s   BEST: ${(bestScores[key]||time).toFixed(1)}s`;
-    gameUI.style.display="none";
-    clearUI.style.display="flex";
-
-    if(!reachedLevel.L1 || level>=reachedLevel.L1){
-      reachedLevel.L1=level+1;
-      localStorage.setItem("reachedLevel",JSON.stringify(reachedLevel));
-    }
-  }
-}
-
-// ===== 描画 =====
 function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.strokeStyle="#000";
-  for(let i=1;i<gridSize;i++){
+
+    const now = performance.now();
+
+    const elapsed = (now - startTime) / 1000;
+
+    if(elapsed >= TOTAL_DURATION){
+        render();
+        return;
+    }
+
+    while(now - lastSample > 1000/SAMPLE_RATE){
+
+        addSample();
+
+        lastSample += 1000/SAMPLE_RATE;
+    }
+
+    render();
+
+    requestAnimationFrame(draw);
+}
+
+function render(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    const centerY = canvas.height/2;
+
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(gridX+i*cell,gridY);
-    ctx.lineTo(gridX+i*cell,gridY+gridSize*cell);
+
+    for(let i=0;i<points.length;i++){
+
+        const x = i/(maxPoints-1) * canvas.width;
+
+        const y = centerY - points[i];
+
+        if(i===0){
+            ctx.moveTo(x,y);
+        }else{
+            ctx.lineTo(x,y);
+        }
+    }
+
     ctx.stroke();
+
+    // 中央線
+    ctx.strokeStyle = "#ddd";
+    ctx.lineWidth = 1;
+
     ctx.beginPath();
-    ctx.moveTo(gridX,gridY+i*cell);
-    ctx.lineTo(gridX+gridSize*cell,gridY+i*cell);
+    ctx.moveTo(0,centerY);
+    ctx.lineTo(canvas.width,centerY);
     ctx.stroke();
-  }
-  ctx.lineWidth=3;
-  ctx.strokeRect(gridX,gridY,gridSize*cell,gridSize*cell);
-  ctx.lineWidth=1;
 
-  pieces.forEach(p=>{
-    if(reveal && p.placed){
-  // 黒で塗る
-  p.shape.forEach(b=>{
-    const px=p.x+b.x*cell;
-    const py=p.y+b.y*cell;
-    ctx.fillStyle="#000";
-    ctx.fillRect(px,py,cell,cell);
-  });
-
-  // 外形線だけ描く
-  ctx.strokeStyle="#fff";
-  ctx.lineWidth=2;
-
-  p.shape.forEach(b=>{
-    const x=b.x;
-    const y=b.y;
-
-    const px=p.x+x*cell;
-    const py=p.y+y*cell;
-
-    // 上
-    if(!p.shape.some(n=>n.x===x && n.y===y-1)){
-      ctx.beginPath();
-      ctx.moveTo(px,py);
-      ctx.lineTo(px+cell,py);
-      ctx.stroke();
-    }
-    // 下
-    if(!p.shape.some(n=>n.x===x && n.y===y+1)){
-      ctx.beginPath();
-      ctx.moveTo(px,py+cell);
-      ctx.lineTo(px+cell,py+cell);
-      ctx.stroke();
-    }
-    // 左
-    if(!p.shape.some(n=>n.x===x-1 && n.y===y)){
-      ctx.beginPath();
-      ctx.moveTo(px,py);
-      ctx.lineTo(px,py+cell);
-      ctx.stroke();
-    }
-    // 右
-    if(!p.shape.some(n=>n.x===x+1 && n.y===y)){
-      ctx.beginPath();
-      ctx.moveTo(px+cell,py);
-      ctx.lineTo(px+cell,py+cell);
-      ctx.stroke();
-    }
-  });
-
-} else {
-      // 通常時：線のみ
-      p.shape.forEach(b=>{
-        const px=p.x+b.x*cell;
-        const py=p.y+b.y*cell;
-        ctx.strokeStyle="#000";
-        ctx.lineWidth=1;
-        ctx.strokeRect(px,py,cell,cell);
-      });
-    }
-  });
-
-  requestAnimationFrame(draw);
 }
 
 draw();
 
-// ===== マウス操作 =====
-function getMousePos(e){
-  const rect=canvas.getBoundingClientRect();
-  return{
-    x:(e.clientX-rect.left)*(canvas.width/rect.width),
-    y:(e.clientY-rect.top)*(canvas.height/rect.height)
-  };
-}
-
-
-canvas.addEventListener("mousedown",e=>{
-  const m=getMousePos(e);
-  for(let i=pieces.length-1;i>=0;i--){
-    const p=pieces[i];
-    for(const b of p.shape){
-      const px=p.x+b.x*cell;
-      const py=p.y+b.y*cell;
-      if(m.x>px && m.x<px+cell && m.y>py && m.y<py+cell){
-        if(p.placed){ p.x=p.startX; p.y=p.startY; p.placed=false; return; }
-        dragging=p;
-        dragging.startX=p.x;
-        dragging.startY=p.y;
-        ox=m.x-p.x;
-        oy=m.y-p.y;
-        return;
-      }
-    }
-  }
-});
-
-canvas.addEventListener("mousemove",e=>{
-  if(!dragging) return;
-  const m=getMousePos(e);
-  dragging.x=m.x-ox;
-  dragging.y=m.y-oy;
-});
-
-// ===== マウスアップで重なりチェック付き =====
-window.addEventListener("mouseup",()=>{
-  if(!dragging) return;
-
-  const gx=Math.round((dragging.x-gridX)/cell);
-  const gy=Math.round((dragging.y-gridY)/cell);
-
-  let inside=true;
-
-  for(const b of dragging.shape){
-    const x=gx+b.x;
-    const y=gy+b.y;
-    if(x<0 || y<0 || x>=gridSize || y>=gridSize){
-      inside=false;
-      break;
-    }
-  }
-
-  if(inside){
-    for(const other of pieces){
-      if(other===dragging || !other.placed) continue;
-      for(const b1 of dragging.shape){
-        const dx = gx+b1.x;
-        const dy = gy+b1.y;
-        for(const b2 of other.shape){
-          const ox = (other.x-gridX)/cell + b2.x;
-          const oy = (other.y-gridY)/cell + b2.y;
-          if(dx===ox && dy===oy){
-            inside=false;
-            break;
-          }
-        }
-        if(!inside) break;
-      }
-      if(!inside) break;
-    }
-  }
-
-  if(inside){
-    dragging.x = gridX + gx*cell;
-    dragging.y = gridY + gy*cell;
-    dragging.placed = true;
-    checkClear();
-  } else {
-    dragging.x = dragging.startX;
-    dragging.y = dragging.startY;
-    dragging.placed = false;
-  }
-
-  dragging=null;
-});
-
-// ===== スペースキーで答え確認 =====
-let spacePressed=false;
-window.addEventListener("keydown",e=>{
-  if(e.code!=="Space") return;
-  if(spacePressed) return;
-  spacePressed=true;
-  if(cleared) return;
-  spaceLife--;
-  renderSpaceLife();
-  if(spaceLife<=0){
-    gameUI.style.display="none";
-    gameOver.style.display="flex";
-    return;
-  }
-  reveal=true;
-  setTimeout(()=>{ reveal=false; },1000);
-});
-
-window.addEventListener("keyup",e=>{
-  if(e.code==="Space"){ spacePressed=false; }
-});
-
-
- // ===== ここから追加（JS） =====
-
-// 名前・ランキング用
-const nameScreen = document.getElementById("nameScreen");
-const nameInput = document.getElementById("nameInput");
-const rankingScreen = document.getElementById("rankingScreen");
-const rankingList = document.getElementById("rankingList");
-
-let playerName = localStorage.getItem("playerName") || "";
-let rankings = JSON.parse(localStorage.getItem("rankings") || "{}");
-
-// STARTを上書き（元は消さなくてOK）
-document.getElementById("start").addEventListener("click", ()=>{
-  title.style.display="none";
-  nameScreen.style.display="flex";
-  nameInput.value = playerName;
-});
-
-// 名前確定
-document.getElementById("nameStart").onclick=()=>{
-  if(nameInput.value.trim()==="") return;
-
-  playerName = nameInput.value.trim();
-  localStorage.setItem("playerName", playerName);
-
-  nameScreen.style.display="none";
-  gameUI.style.display="flex";
-  startLevel();
-};
-
-// ランキング保存（既存関数にフック）
-const originalCheckClear = checkClear;
-checkClear = function(){
-  originalCheckClear();
-
-  if(!cleared) return;
-
-  const time = elapsedTime;
-  const rKey = `level-${level}`;
-
-  if(!rankings[rKey]) rankings[rKey] = [];
-
-  rankings[rKey].push({
-    name: playerName || "NONAME",
-    time: time
-  });
-
-  rankings[rKey].sort((a,b)=>a.time-b.time);
-  rankings[rKey] = rankings[rKey].slice(0,5);
-
-  localStorage.setItem("rankings", JSON.stringify(rankings));
-};
-
-// ランキング表示
-function showRanking(){
-  rankingList.innerHTML = "";
-
-  LEVELS.forEach((size, i)=>{
-    const key = `level-${i}`;
-    const data = rankings[key] || [];
-
-    const column = document.createElement("div");
-    column.className = "rankColumn";
-
-    // タイトル（4×4とか）
-    const title = document.createElement("div");
-    title.className = "rankTitle";
-    title.textContent = `${size}×${size}`;
-    column.appendChild(title);
-
-    // 記録
-    if(data.length === 0){
-      const empty = document.createElement("div");
-      empty.className = "rankItem";
-      empty.textContent = "NO DATA";
-      column.appendChild(empty);
-    }else{
-      data.forEach((r, index)=>{
-        const item = document.createElement("div");
-        item.className = "rankItem";
-        item.textContent = `${index+1}. ${r.name} ${r.time.toFixed(1)}s`;
-        column.appendChild(item);
-      });
-    }
-
-    rankingList.appendChild(column);
-  });
-}
-
-// ボタン動作
-document.getElementById("rankingBtn").onclick=()=>{
-  menuScreen.style.display="none";
-  rankingScreen.style.display="flex";
-  showRanking();
-};
-
-document.getElementById("rankingBack").onclick=()=>{
-  rankingScreen.style.display="none";
-  menuScreen.style.display="flex";
-};
-
-// ===== ここまで追加 =====
 </script>
 
 </body>
