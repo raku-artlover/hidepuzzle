@@ -39,8 +39,8 @@ window.addEventListener("resize", resize);
 // 設定
 // =======================
 
-// 1秒で画面横断
-const SCROLL_SECONDS = 1;
+// 2秒で画面横断（速度半分）
+const SCROLL_SECONDS = 2;
 
 // 3分で停止
 const TOTAL_DURATION = 180;
@@ -106,6 +106,7 @@ function render(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     const centerY = canvas.height/2;
+    const starX = canvas.width / 2;
 
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 2;
@@ -113,7 +114,7 @@ function render(){
 
     for(let i=0;i<points.length;i++){
 
-        const x = i/(maxPoints-1) * canvas.width;
+        const x = starX - (points.length - 1 - i) / (maxPoints - 1) * starX;
 
         const y = centerY - points[i];
 
@@ -125,6 +126,18 @@ function render(){
     }
 
     ctx.stroke();
+
+    // ★の描画（最新値）
+    if(points.length){
+
+        const latestY = centerY - points[points.length - 1];
+
+        ctx.fillStyle = "#000";
+        ctx.font = "32px serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("★", starX, latestY);
+    }
 
     // 中央線
     ctx.strokeStyle = "#ddd";
